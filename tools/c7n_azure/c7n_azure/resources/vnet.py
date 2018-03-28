@@ -15,16 +15,6 @@
 from c7n_azure.query import QueryResourceManager
 from c7n_azure.provider import resources
 
-from c7n.actions import (
-    ActionRegistry, BaseAction
-)
-from c7n.filters import (
-    FilterRegistry, ValueFilter, Filter, OPERATORS
-)
-
-filters = FilterRegistry('azure.vnet.filters')
-actions = ActionRegistry('azure.vnet.actions')
-
 
 @resources.register('vnet')
 class Vnet(QueryResourceManager):
@@ -33,6 +23,3 @@ class Vnet(QueryResourceManager):
         service = 'azure.mgmt.network'
         client = 'NetworkManagementClient'
         enum_spec = ('virtual_networks', 'list')
-
-    filter_registry = filters
-    action_registry = actions

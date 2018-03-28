@@ -71,23 +71,6 @@ class DescribeSource(object):
         return resources
 
 
-@sources.register('describe-azure')
-class DescribeSource(object):
-
-    def __init__(self, manager):
-        self.manager = manager
-        self.query = ResourceQuery(manager.session_factory)
-
-    def get_resources(self, query):
-        return self.query.filter(self.manager)
-
-    def get_permissions(self):
-        return ()
-
-    def augment(self, resources):
-        return resources
-
-
 class QueryMeta(type):
     """metaclass to have consistent action/filter registry for new resources."""
     def __new__(cls, name, parents, attrs):

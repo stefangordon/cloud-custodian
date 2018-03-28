@@ -15,16 +15,6 @@
 from c7n_azure.query import QueryResourceManager
 from c7n_azure.provider import resources
 
-from c7n.actions import (
-    ActionRegistry, BaseAction
-)
-from c7n.filters import (
-    FilterRegistry, ValueFilter, Filter, OPERATORS
-)
-
-filters = FilterRegistry('azure.storage.filters')
-actions = ActionRegistry('azure.storage.actions')
-
 
 @resources.register('storage')
 class Storage(QueryResourceManager):
@@ -33,6 +23,3 @@ class Storage(QueryResourceManager):
         service = 'azure.mgmt.storage'
         client = 'StorageManagementClient'
         enum_spec = ('storage_accounts', 'list')
-
-    filter_registry = filters
-    action_registry = actions

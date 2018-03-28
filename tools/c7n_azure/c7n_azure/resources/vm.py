@@ -15,17 +15,6 @@
 from c7n_azure.query import QueryResourceManager
 from c7n_azure.provider import resources
 
-from c7n.actions import (
-    ActionRegistry, BaseAction
-)
-from c7n.filters import (
-    FilterRegistry, ValueFilter, Filter, OPERATORS
-)
-
-filters = FilterRegistry('azure.vm.filters')
-actions = ActionRegistry('azure.vm.actions')
-
-
 @resources.register('vm')
 class VirtualMachine(QueryResourceManager):
 
@@ -33,6 +22,3 @@ class VirtualMachine(QueryResourceManager):
         service = 'azure.mgmt.compute'
         client = 'ComputeManagementClient'
         enum_spec = ('virtual_machines', 'list_all')
-
-    filter_registry = filters
-    action_registry = actions
