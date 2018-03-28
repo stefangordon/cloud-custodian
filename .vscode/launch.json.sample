@@ -1,6 +1,7 @@
 {
     // Sample launch.json for debugging CLI commands in VS Code.
-    // Copy to launch.json as needed.
+    // Copy to launch.json as needed and adjust arguments array
+
     "version": "0.2.0",
     "configurations": [
         {
@@ -39,7 +40,7 @@
                 "run",
                 "-s",
                 "output",
-                "test.yml"
+                "your_policy.yml"
             ],
             "exceptionHandling":{
                 "ignore": ["copy.Error"]
