@@ -22,17 +22,17 @@ from c7n.filters import (
     FilterRegistry, ValueFilter, Filter, OPERATORS
 )
 
-filters = FilterRegistry('azure.vm.filters')
-actions = ActionRegistry('azure.vm.actions')
+filters = FilterRegistry('azure.storage.filters')
+actions = ActionRegistry('azure.storage.actions')
 
 
-@resources.register('vm')
-class VirtualMachine(QueryResourceManager):
+@resources.register('storage')
+class Storage(QueryResourceManager):
 
     class resource_type(object):
-        service = 'azure.mgmt.compute'
-        client = 'ComputeManagementClient'
-        enum_spec = ('virtual_machines', 'list_all')
+        service = 'azure.mgmt.storage'
+        client = 'StorageManagementClient'
+        enum_spec = ('storage_accounts', 'list')
 
     filter_registry = filters
     action_registry = actions
