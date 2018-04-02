@@ -12,23 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import absolute_import, division, print_function, unicode_literals
-from .common import BaseTest
+from tests.common import BaseTest
 from c7n_azure.session import Session
 
 
 class SessionTest(BaseTest):
     def setUp(self):
         super(SessionTest, self).setUp()
-        session = Session()
 
-    def test_client(self):
-        """Simple example showing a VCR recorded test working"""
+    def test_api_version(self):
+        """Verify we retrieve the correct API version for a resource type"""
         s = Session()
         client = s.client('azure.mgmt.resource.ResourceManagementClient')
-        #assertIsNotNone(client)
-        #resource_group_params = {'location': 'westus'}
-        #resource_group_params.update(tags={'hello': 'world'})
+        resource = next(client.resources.list())
+        self.assertEqual('2017-10-12', s.resource_api_version(resource))
 
-        #for item in client.resources.list():
-        #    print(s.resource_api_version(item))
+
 
