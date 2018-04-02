@@ -14,7 +14,9 @@
 
 from c7n_azure.query import QueryResourceManager
 from c7n_azure.provider import resources
-
+from c7n.filters import (
+    FilterRegistry, AgeFilter, ValueFilter, Filter, OPERATORS, DefaultVpcBase
+)
 
 @resources.register('storage')
 class Storage(QueryResourceManager):
@@ -23,3 +25,10 @@ class Storage(QueryResourceManager):
         service = 'azure.mgmt.storage'
         client = 'StorageManagementClient'
         enum_spec = ('storage_accounts', 'list')
+
+Storage.filter_registry.register('SomeOtherFilterName', AgeFilter)
+
+
+@Storage.filter_registry.register('helloworld')
+class AttachedVolume(object):
+    pass

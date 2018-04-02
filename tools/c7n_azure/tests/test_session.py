@@ -16,13 +16,19 @@ from .common import BaseTest
 from c7n_azure.session import Session
 
 
-class VMClientTest(BaseTest):
+class SessionTest(BaseTest):
     def setUp(self):
-        super(VMClientTest, self).setUp()
+        super(SessionTest, self).setUp()
         session = Session()
-        self.client = session.client('azure.mgmt.compute.ComputeManagementClient')
 
     def test_client(self):
         """Simple example showing a VCR recorded test working"""
-        machines = list(self.client.virtual_machines.list_all())
-        self.assertGreater(len(machines), 1)
+        s = Session()
+        client = s.client('azure.mgmt.resource.ResourceManagementClient')
+        #assertIsNotNone(client)
+        #resource_group_params = {'location': 'westus'}
+        #resource_group_params.update(tags={'hello': 'world'})
+
+        #for item in client.resources.list():
+        #    print(s.resource_api_version(item))
+
