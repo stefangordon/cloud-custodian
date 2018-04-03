@@ -46,7 +46,7 @@ class DeleteResourceGroup(BaseAction):
     #   - name: test - azure
     #   resource: azure.resourcegroup
     #   actions:
-    #       - type: remove
+    #       - type: delete
 
     schema = type_schema('delete')
 
