@@ -13,19 +13,24 @@
 # limitations under the License.
 from __future__ import absolute_import, division, print_function, unicode_literals
 from common import BaseTest
-from c7n_azure.session import Session
 
 
-class SessionTest(BaseTest):
+class StorageTest(BaseTest):
     def setUp(self):
-        super(SessionTest, self).setUp()
+        super(StorageTest, self).setUp()
 
-    def test_api_version(self):
-        """Verify we retrieve the correct API version for a resource type"""
-        s = Session()
-        client = s.client('azure.mgmt.resource.ResourceManagementClient')
-        resource = next(client.resources.list())
-        self.assertEqual('2017-10-12', s.resource_api_version(resource))
+    def test_value_filter(self):
+        p = self.load_policy({
+            'name': 'test-azure-storage-enum',
+            'resource': 'azure.storage',
+            'filters': [
 
-
+                {'type': 'value',
+                 'key': 'name',
+                 'op': 'eq',
+                 'value_type': 'normalize',
+                 'value': 'cs44bfa739e0d8cx437ex930'}],
+        })
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
 
