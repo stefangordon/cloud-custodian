@@ -22,4 +22,6 @@ class Storage(QueryResourceManager):
     class resource_type(object):
         service = 'azure.mgmt.storage'
         client = 'StorageManagementClient'
+        namespace = 'Microsoft.Storage'
+        type = 'storageAccounts'
         enum_spec = ('storage_accounts', 'list')

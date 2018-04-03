@@ -22,6 +22,12 @@ from c7n.query import sources
 from c7n.utils import local_session
 
 
+class AzureResource(dict):
+    def __init__(self, *args, **kwargs):
+        self.update(dict(*args, **kwargs))
+        self.azure_model = None
+
+
 class ResourceQuery(object):
 
     def __init__(self, session_factory):
@@ -29,11 +35,17 @@ class ResourceQuery(object):
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
-        client = local_session(self.session_factory).client(
-            "%s.%s" % (m.service, m.client))
-        enum_op, list_op = m.enum_spec
-        op = getattr(getattr(client, enum_op), list_op)
-        data = [self.to_dictionary(e) for e in op()]
+        client = local_session(self.session_factory).client('azure.mgmt.resource.ResourceManagementClient')
+
+        resource_type = '%s/%s' % (m.namespace, m.type)
+        results = client.resources.list("resourceType eq '%s'" % resource_type)
+
+        data = []
+        for e in results:
+            ar = AzureResource(self.to_dictionary(e))
+            ar.azure_model = e
+            data.append(ar)
+
         return data
 
     def to_dictionary(self, obj):
