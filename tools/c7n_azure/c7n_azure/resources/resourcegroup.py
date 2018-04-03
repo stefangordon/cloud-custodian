@@ -14,33 +14,43 @@
 
 from c7n_azure.query import QueryResourceManager
 from c7n_azure.provider import resources
-from c7n.filters import (
-    FilterRegistry, Filter
-)
-from c7n import utils
-
-filters = FilterRegistry('ec2.filters')
+from c7n.actions import BaseAction
+from c7n.filters import Filter
+from c7n.utils import type_schema
 
 @resources.register('resourcegroup')
 class ResourceGroup(QueryResourceManager):
-
     class resource_type(object):
         service = 'azure.mgmt.resource'
         client = 'ResourceManagementClient'
         enum_spec = ('resource_groups', 'list')
 
-    filter_registry = filters
 
-    @filters.register('empty-group')
-    class EmptyGroup(Filter):
-        # policies:
-        #   - name: test - azure
-        #   resource: azure.resourcegroup
-        #   filters:
-        #       - type: empty - group
 
-        def __call__(self, group):
-            client = utils.local_session(self.manager.session_factory).client('azure.mgmt.resource.ResourceManagementClient')
-            resources_iterator = client.resources.list_by_resource_group(group['name'])
-            return any(True for _ in resources_iterator)
+@ResourceGroup.filter_registry.register('empty-group')
+class EmptyGroup(Filter):
+    # policies:
+    #   - name: test - azure
+    #   resource: azure.resourcegroup
+    #   filters:
+    #       - type: empty-group
 
+    def __call__(self, group):
+        resources_iterator = self.manager.get_client().resources.list_by_resource_group(group['name'])
+        return not any(True for _ in resources_iterator)
+
+
+@ResourceGroup.action_registry.register('delete')
+class DeleteResourceGroup(BaseAction):
+    # policies:
+    #   - name: test - azure
+    #   resource: azure.resourcegroup
+    #   actions:
+    #       - type: remove
+
+    schema = type_schema('delete')
+
+    def process(self, groups):
+        for group in groups:
+            self.manager.log.info('Removing empty resource group ' + group['name'])
+            self.manager.get_client().resource_groups.delete(group['name'])
