@@ -45,8 +45,8 @@ class ResourceQuery(object):
             return [self.to_dictionary(v) for v in obj]
         elif hasattr(obj, "__dict__"):
             data = dict([(key, self.to_dictionary(value))
-                for key, value in obj.__dict__.iteritems()
-                if not callable(value) and not key.startswith('_')])
+                        for key, value in obj.__dict__.items()
+                        if not callable(value) and not key.startswith('_')])
             return data
         else:
             return obj
