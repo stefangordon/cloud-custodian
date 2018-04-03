@@ -25,9 +25,27 @@ class Session(object):
          self.subscription_id,
          self.tenant_id) = Profile().get_login_credentials(
             resource=AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id)
+        self.__provider_cache = {}
 
     def client(self, client):
         service_name, client_name = client.rsplit('.', 1)
         svc_module = importlib.import_module(service_name)
         klass = getattr(svc_module, client_name)
         return klass(self.credentials, self.subscription_id)
+
+    def resource_api_version(self, resource):
+        """ latest non-preview api version for resource """
+        if resource.type in self.__provider_cache:
+            return self.__provider_cache[resource.type]
+
+        namespace = resource.id.split('/')[6]
+        resource_client = self.client('azure.mgmt.resource.ResourceManagementClient')
+        provider = resource_client.providers.get(namespace)
+
+        rt = next((t for t in provider.resource_types if t.resource_type == str(resource.type).split('/')[-1]), None)
+        if rt and rt.api_versions:
+            versions = [v for v in rt.api_versions if 'preview' not in v.lower()]
+            api_version = versions[0] if versions else rt.api_versions[0]
+            self.__provider_cache[resource.type] = api_version
+            return api_version
+
