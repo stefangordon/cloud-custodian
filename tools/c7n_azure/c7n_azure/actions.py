@@ -16,6 +16,7 @@ Actions to take on Azure resources
 """
 from c7n.actions import BaseAction
 from c7n import utils
+from c7n.filters import FilterValidationError
 
 
 class Tag(BaseAction):
@@ -25,15 +26,17 @@ class Tag(BaseAction):
 
     schema = utils.type_schema(
         'tag',
-        required=['tag', 'value'],
         **{
             'tag': {'type': 'string'},
-            'value': {'type': 'string'}
+            'value': {'type': 'string'},
+            'tags': {'type': 'object'}
         }
     )
 
     def validate(self):
-        # All Azure resource should support add tags
+        if self.data.get('tags') and self.data.get('tag'):
+            raise FilterValidationError(
+                "Can't specify both tags and tag, choose one")
         return self
 
     def process(self, resources):
@@ -43,5 +46,14 @@ class Tag(BaseAction):
         for resource in resources:
             model = resource.azure_model
             api_version = session.resource_api_version(model)
-            model.tags[self.data.get('tag')] = self.data.get('value')
+
+            tag = self.data.get('tag')
+            value = self.data.get('value')
+
+            tags = self.data.get('tags') or model.tags
+
+            if tag and value:
+                tags[tag] = value
+
+            model.tags = tags
             client.resources.create_or_update_by_id(model.id, api_version, model)
