@@ -28,10 +28,8 @@ class ResourceQuery(object):
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
-        client = local_session(self.session_factory).client(
-            "%s.%s" % (m.service, m.client))
         enum_op, list_op = m.enum_spec
-        op = getattr(getattr(client, enum_op), list_op)
+        op = getattr(getattr(resource_manager.get_client(), enum_op), list_op)
         data = [self.to_dictionary(e) for e in op()]
         return data
 
@@ -96,6 +94,9 @@ class QueryResourceManager(ResourceManager):
 
     def get_source(self, source_type):
         return sources.get(source_type)(self)
+
+    def get_client(self):
+        return local_session(self.session_factory).client("%s.%s" % (self.resource_type.service, self.resource_type.client))
 
     def get_cache_key(self, query):
         return {'source_type': self.source_type, 'query': query}
