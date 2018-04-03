@@ -16,7 +16,6 @@ Actions to take on Azure resources
 """
 from c7n.actions import BaseAction
 from c7n import utils
-from azure.mgmt.resource import ResourceManagementClient
 
 
 class Tag(BaseAction):
@@ -26,7 +25,7 @@ class Tag(BaseAction):
 
     schema = utils.type_schema(
         'tag',
-        required=['tag'],
+        required=['tag', 'value'],
         **{
             'tag': {'type': 'string'},
             'value': {'type': 'string'}
@@ -38,4 +37,11 @@ class Tag(BaseAction):
         return self
 
     def process(self, resources):
-        pass
+        session = utils.local_session(self.manager.session_factory)
+        client = session.client('azure.mgmt.resource.ResourceManagementClient')
+
+        for resource in resources:
+            model = resource.azure_model
+            api_version = session.resource_api_version(model)
+            model.tags[self.data.get('tag')] = self.data.get('value')
+            client.resources.create_or_update_by_id(model.id, api_version, model)
