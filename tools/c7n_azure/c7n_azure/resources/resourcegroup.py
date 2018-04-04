@@ -24,7 +24,8 @@ class ResourceGroup(QueryResourceManager):
         service = 'azure.mgmt.resource'
         client = 'ResourceManagementClient'
         enum_spec = ('resource_groups', 'list')
-
+        id = 'id'
+        name = 'name'
 
 
 @ResourceGroup.filter_registry.register('empty-group')
