@@ -3,9 +3,8 @@ import json
 import logging
 import shutil
 import tempfile
-
+import re
 import six
-import yaml
 from vcr_unittest import VCRTestCase
 
 from c7n import policy
@@ -17,14 +16,56 @@ from c7n_azure.session import Session
 
 load_resources()
 C7N_SCHEMA = generate()
+DEFAULT_SUBSCRIPTION_ID = 'ea42f556-5106-4743-99b0-c129bfa71a47'
 
 
-class BaseTest(VCRTestCase):
+class AzureVCRBaseTest(VCRTestCase):
 
     def _get_vcr_kwargs(self):
-        return super(BaseTest, self)._get_vcr_kwargs(
-            filter_headers=[('Authorization', 'bearer filtered')],
+        return super(VCRTestCase, self)._get_vcr_kwargs(
+            filter_headers=['Authorization',
+                            'client-request-id',
+                            'retry-after',
+                            'x-ms-client-request-id',
+                            'x-ms-correlation-request-id',
+                            'x-ms-ratelimit-remaining-subscription-reads',
+                            'x-ms-request-id',
+                            'x-ms-routing-request-id',
+                            'x-ms-gateway-service-instanceid',
+                            'x-ms-ratelimit-remaining-tenant-reads',
+                            'x-ms-served-by', ],
+            before_record_request=self.request_callback
         )
+
+    def _get_vcr(self, **kwargs):
+        myvcr = super(VCRTestCase, self)._get_vcr(**kwargs)
+        myvcr.register_matcher('azurematcher', self.azure_matcher)
+        myvcr.match_on = ['azurematcher']
+        return myvcr
+
+    def azure_matcher(self, r1, r2):
+        r1_uri = re.sub(
+            r"[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}",
+            DEFAULT_SUBSCRIPTION_ID,
+            r1.uri)
+        r2_uri = re.sub(
+            r"[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}",
+            DEFAULT_SUBSCRIPTION_ID,
+            r2.uri)
+        return r1_uri == r2_uri
+
+    def request_callback(self, request):
+        if "/subscriptions/" in request.url:
+            request.uri = re.sub(
+                r"[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}",
+                DEFAULT_SUBSCRIPTION_ID,
+                request.url)
+        if re.match('https://login.microsoftonline.com/([^/]+)/oauth2/token', request.uri):
+            return None
+        return request
+
+
+class BaseTest(AzureVCRBaseTest):
 
     def cleanUp(self):
         # Clear out thread local session cache

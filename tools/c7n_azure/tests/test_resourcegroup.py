@@ -20,6 +20,7 @@ class ResourceGroupTest(BaseTest):
         super(ResourceGroupTest, self).setUp()
 
     def test_delete_empty_group(self):
+        """Assumes existence of a single empty RG named 'empty_group_for_testing'"""
         p = self.load_policy({
             'name': 'test-azure-resource-group',
             'resource': 'azure.resourcegroup',
