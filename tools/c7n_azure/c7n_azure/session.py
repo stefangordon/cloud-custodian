@@ -13,18 +13,33 @@
 # limitations under the License.
 
 import importlib
-
+import os
 from azure.cli.core.cloud import AZURE_PUBLIC_CLOUD
 from azure.cli.core._profile import Profile
-
+from azure.common.credentials import ServicePrincipalCredentials
 
 class Session(object):
 
     def __init__(self):
-        (self.credentials,
-         self.subscription_id,
-         self.tenant_id) = Profile().get_login_credentials(
-            resource=AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id)
+        env_variables = ['AZURE_TENANT_ID', 'AZURE_SUBSCRIPTION_ID', 'AZURE_CLIENT_ID', 'AZURE_CLIENT_SECRET']
+
+        if all(k in env_variables for k in os.environ):
+            # Set credentials with environment variables
+            self.credentials = ServicePrincipalCredentials(
+                client_id=os.environ['AZURE_CLIENT_ID'],
+                secret=os.environ['AZURE_CLIENT_SECRET'],
+                tenant=os.environ['AZURE_TENANT_ID']
+            )
+            self.subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
+            self.tenant_id = os.environ['AZURE_TENANT_ID']
+            pass
+        else:
+            # Try to set credentials with Azure CLI
+            (self.credentials,
+             self.subscription_id,
+             self.tenant_id) = Profile().get_login_credentials(
+                resource=AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id)
+
         self.__provider_cache = {}
 
     def client(self, client):
