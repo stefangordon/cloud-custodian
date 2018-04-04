@@ -21,6 +21,4 @@ class VirtualMachine(QueryResourceManager):
     class resource_type(object):
         service = 'azure.mgmt.compute'
         client = 'ComputeManagementClient'
-        namespace = 'Microsoft.Compute'
-        type = 'virtualMachines'
         enum_spec = ('virtual_machines', 'list_all')

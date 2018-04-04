@@ -22,12 +22,6 @@ from c7n.query import sources
 from c7n.utils import local_session
 
 
-class AzureResource(dict):
-    def __init__(self, *args, **kwargs):
-        self.update(dict(*args, **kwargs))
-        self.azure_model = None
-
-
 class ResourceQuery(object):
 
     def __init__(self, session_factory):
@@ -35,36 +29,13 @@ class ResourceQuery(object):
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
-        client = local_session(self.session_factory).client('azure.mgmt.resource.ResourceManagementClient')
-
-        resource_type = '%s/%s' % (m.namespace, m.type)
-        results = client.resources.list("resourceType eq '%s'" % resource_type)
-
-        data = []
-        for e in results:
-            ar = AzureResource(self.to_dictionary(e))
-            ar.azure_model = e
-            data.append(ar)
+        client = local_session(self.session_factory).client(
+            "%s.%s" % (m.service, m.client))
+        enum_op, list_op = m.enum_spec
+        op = getattr(getattr(client, enum_op), list_op)
+        data = [r.serialize(True) for r in op()]
 
         return data
-
-    def to_dictionary(self, obj):
-        if isinstance(obj, dict):
-            data = {}
-            for (k, v) in obj.items():
-                data[k] = self.to_dictionary(v)
-            return data
-        elif hasattr(obj, "_ast"):
-            return self.to_dictionary(obj._ast())
-        elif hasattr(obj, "__iter__") and not isinstance(obj, str):
-            return [self.to_dictionary(v) for v in obj]
-        elif hasattr(obj, "__dict__"):
-            data = dict([(key, self.to_dictionary(value))
-                for key, value in obj.__dict__.items()
-                if not callable(value) and not key.startswith('_')])
-            return data
-        else:
-            return obj
 
 
 @sources.register('describe-azure')
