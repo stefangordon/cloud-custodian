@@ -30,6 +30,7 @@ class ResourceQuery(object):
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
         enum_op, list_op = m.enum_spec
+        client = resource_manager.get_client()
         op = getattr(getattr(client, enum_op), list_op)
         data = [r.serialize(True) for r in op()]
 
