@@ -84,3 +84,4 @@ class Session(object):
             api_version = versions[0] if versions else rt.api_versions[0]
             self.__provider_cache[resource.type] = api_version
             return api_version
+

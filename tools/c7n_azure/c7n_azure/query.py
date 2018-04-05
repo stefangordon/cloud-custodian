@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import six
+from c7n_azure.actions import Tag
 
 from c7n.actions import ActionRegistry
 from c7n.filters import FilterRegistry
@@ -29,27 +30,10 @@ class ResourceQuery(object):
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
         enum_op, list_op = m.enum_spec
-        op = getattr(getattr(resource_manager.get_client(), enum_op), list_op)
-        data = [self.to_dictionary(e) for e in op()]
-        return data
+        op = getattr(getattr(client, enum_op), list_op)
+        data = [r.serialize(True) for r in op()]
 
-    def to_dictionary(self, obj):
-        if isinstance(obj, dict):
-            data = {}
-            for (k, v) in obj.items():
-                data[k] = self.to_dictionary(v)
-            return data
-        elif hasattr(obj, "_ast"):
-            return self.to_dictionary(obj._ast())
-        elif hasattr(obj, "__iter__") and not isinstance(obj, str):
-            return [self.to_dictionary(v) for v in obj]
-        elif hasattr(obj, "__dict__"):
-            data = dict([(key, self.to_dictionary(value))
-                        for key, value in obj.__dict__.items()
-                        if not callable(value) and not key.startswith('_')])
-            return data
-        else:
-            return obj
+        return data
 
 
 @sources.register('describe-azure')
@@ -76,8 +60,10 @@ class QueryMeta(type):
             attrs['filter_registry'] = FilterRegistry(
                 '%s.filters' % name.lower())
         if 'action_registry' not in attrs:
-            attrs['action_registry'] = ActionRegistry(
+            actions = ActionRegistry(
                 '%s.actions' % name.lower())
+            actions.register('tag', Tag)
+            attrs['action_registry'] = actions
 
         return super(QueryMeta, cls).__new__(cls, name, parents, attrs)
 
