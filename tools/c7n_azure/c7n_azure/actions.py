@@ -21,8 +21,7 @@ from azure.mgmt.resource.resources.models import GenericResource
 
 
 class Tag(BaseAction):
-    """
-    Add a tag to any Azure resource
+    """Add tags to Azure resources
     """
 
     schema = utils.type_schema(

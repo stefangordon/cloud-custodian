@@ -63,6 +63,8 @@ class QueryMeta(type):
         if 'action_registry' not in attrs:
             actions = ActionRegistry(
                 '%s.actions' % name.lower())
+
+            # Registers the generic tagging action to all Azure resources
             actions.register('tag', Tag)
             attrs['action_registry'] = actions
 
@@ -83,7 +85,8 @@ class QueryResourceManager(ResourceManager):
         return sources.get(source_type)(self)
 
     def get_client(self):
-        return local_session(self.session_factory).client("%s.%s" % (self.resource_type.service, self.resource_type.client))
+        return local_session(
+            self.session_factory).client("%s.%s" % (self.resource_type.service, self.resource_type.client))
 
     def get_cache_key(self, query):
         return {'source_type': self.source_type, 'query': query}

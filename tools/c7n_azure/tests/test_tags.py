@@ -19,6 +19,8 @@ from c7n.filters import FilterValidationError
 
 
 class TagsTest(BaseTest):
+    """Requires at least one VM in subscription
+    """
     def setUp(self):
         super(TagsTest, self).setUp()
 
@@ -51,6 +53,7 @@ class TagsTest(BaseTest):
         })
         p.run()
 
+        # verify that the existing tags were overridden
         s = Session()
         client = s.client('azure.mgmt.compute.ComputeManagementClient')
         machines = list(client.virtual_machines.list_all())
