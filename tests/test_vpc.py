@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from .common import BaseTest, functional, event_data
+from .common import BaseTest, functional, event_data, TestConfig as Config
 from c7n.filters import FilterValidationError
 
 
@@ -597,6 +597,19 @@ class RouteTableTest(BaseTest):
 
 
 class PeeringConnectionTest(BaseTest):
+
+    def test_peer_cross_account(self):
+        factory = self.replay_flight_data('test_peer_cross_account')
+        p = self.load_policy({
+            'name': 'cross-account',
+            'resource': 'peering-connection',
+            'filters': [
+                {'type': 'cross-account'}]},
+            config=Config.empty(),
+            session_factory=factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['c7n:CrossAccountViolations'], ['185106417252'])
 
     def test_peer_missing_route(self):
         # peer from all routes
@@ -1552,3 +1565,50 @@ class NATGatewayTest(BaseTest):
         }, session_factory=factory)
         resources = p.run()
         self.assertEqual(len(resources), 1)
+
+
+class FlowLogsTest(BaseTest):
+
+    def test_vpc_create_flow_logs(self):
+        session_factory = self.replay_flight_data('test_vpc_create_flow_logs')
+        p = self.load_policy({
+            'name': 'c7n-create-vpc-flow-logs',
+            'resource': 'vpc',
+            'filters': [
+                {'tag:Name': 'FlowLogTest'},
+                {'type': 'flow-logs', 'enabled': False}],
+            'actions': [{
+                'type': 'set-flow-log',
+                'DeliverLogsPermissionArn': 'arn:aws:iam::644160558196:role/flowlogsRole',
+                'LogGroupName': '/custodian/vpc_logs/',
+                'TrafficType': 'ALL'}]
+        }, session_factory=session_factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['VpcId'], 'vpc-7af45101')
+        client = session_factory(region='us-east-1').client('ec2')
+        logs = client.describe_flow_logs(Filters=[{
+            'Name': 'resource-id',
+            'Values': [resources[0]['VpcId']]}])['FlowLogs']
+        self.assertEqual(logs[0]['ResourceId'], resources[0]['VpcId'])
+
+    def test_vpc_delete_flow_logs(self):
+        session_factory = self.replay_flight_data('test_vpc_delete_flow_logs')
+        p = self.load_policy({
+            'name': 'c7n-delete-vpc-flow-logs',
+            'resource': 'vpc',
+            'filters': [
+                {'tag:Name': 'FlowLogTest'},
+                {'type': 'flow-logs', 'enabled': True}],
+            'actions': [{
+                'type': 'set-flow-log',
+                'state': False}]
+        }, session_factory=session_factory)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['VpcId'], 'vpc-7af45101')
+        client = session_factory(region='us-east-1').client('ec2')
+        logs = client.describe_flow_logs(Filters=[{
+            'Name': 'resource-id',
+            'Values': [resources[0]['VpcId']]}])['FlowLogs']
+        self.assertFalse(logs)
