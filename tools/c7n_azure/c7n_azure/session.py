@@ -85,7 +85,8 @@ class Session(object):
         resource_client = self.client('azure.mgmt.resource.ResourceManagementClient')
         provider = resource_client.providers.get(namespace)
 
-        rt = next((t for t in provider.resource_types if t.resource_type == str(resource_type).split('/')[-1]), None)
+        rt = next((t for t in provider.resource_types
+            if t.resource_type == str(resource_type).split('/')[-1]), None)
         if rt and rt.api_versions:
             versions = [v for v in rt.api_versions if 'preview' not in v.lower()]
             api_version = versions[0] if versions else rt.api_versions[0]
