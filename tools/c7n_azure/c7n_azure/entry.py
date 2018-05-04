@@ -23,6 +23,7 @@ import c7n_azure.resources.storage
 import c7n_azure.resources.sqlserver
 import c7n_azure.resources.vm
 import c7n_azure.resources.vnet
+import c7n_azure.resources.network_security_group
 import c7n_azure.resources.web_app # noqa: F401
 
 
@@ -30,4 +31,3 @@ def initialize_azure():
     # after all resources are loaded, do out of band registrations of filters/actions
     resources.notify(resources.EVENT_FINAL)
     pass
-
