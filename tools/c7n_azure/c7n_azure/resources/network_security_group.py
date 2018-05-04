@@ -78,7 +78,7 @@ class SecurityRuleFilter(Filter):
         # ToPort is specified, should be below ToPort
         if self.to_port:
             for port in dest_port_range:
-                if port > self.to:
+                if port > self.to_port:
                     return False
         # OnlyPorts is specified, anything NOT included in OnlyPorts should return True
         if self.only_ports:
