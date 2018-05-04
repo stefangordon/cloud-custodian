@@ -23,12 +23,8 @@ import c7n_azure.resources.storage
 import c7n_azure.resources.sqlserver
 import c7n_azure.resources.vm
 import c7n_azure.resources.vnet
-<<<<<<< HEAD
 import c7n_azure.resources.network_security_group
 import c7n_azure.resources.web_app # noqa: F401
-=======
-import c7n_azure.resources.web_app  # noqa: F401
->>>>>>> parentrepo/master
 
 
 def initialize_azure():
