@@ -35,20 +35,19 @@ class NetworkSecurityGroup(QueryResourceManager):
 
 class SecurityRuleFilter(Filter):
     perm_attrs = set((
-        'IpProtocol', 'FromPort', 'ToPort', 'UserIdGroupPairs',
-        'IpRanges', 'PrefixListIds'
-    ))
+        'IpProtocol', 'FromPort', 'ToPort'))
 
-    filter_attrs = set(('Cidr', 'Ports', 'OnlyPorts', 'SelfReference'))
+    filter_attrs = set(('Cidr', 'Ports', 'OnlyPorts'))
     attrs = perm_attrs.union(filter_attrs)
     attrs.add('match-operator')
 
-    def process(self, network_security_groups, event=None):
-        self.ip_protocol = 'IpProtocol' in self.data and self.data['IpProtocol'] or None
-        self.from_port = 'FromPort' in self.data and self.data['FromPort'] or None
-        self.to_port = 'ToPort' in self.data and self.data['ToPort'] or None
-        self.ports = 'Ports' in self.data and self.data['Ports'] or None
-        self.only_ports = ('OnlyPorts' in self.data and self.data['OnlyPorts'] or None)
+    def validate(self):
+        self.ip_protocol = self.data.get('IpProtocol')
+        self.from_port = self.data.get('FromPort')
+        self.to_port = self.data.get('ToPort')
+        self.ports = self.data.get('Ports')
+        self.only_ports = self.data.get('OnlyPorts')
+        self.match_op = self.data.get('match-operator', 'and') == 'and' and all or any
         if self.from_port and self.to_port and self.from_port > self.to_port:
             raise ValueError('FromPort should be lower than ToPort')
         if ((self.from_port or self.to_port) and (self.ports or self.only_ports)) \
@@ -56,11 +55,12 @@ class SecurityRuleFilter(Filter):
             raise ValueError(
                 'Invalid port parameters. Choose port range (FromPort and/or ToPort) '
                 'or specify specific ports (Ports or OnlyPorts)')
-        match_op = self.data.get('match-operator', 'and') == 'and' and all or any
+
+    def process(self, network_security_groups, event=None):
         for nsg in network_security_groups:
             nsg['properties']['securityRules'] = \
                 [rule for rule in nsg['properties']['securityRules']
-                 if self.is_match(rule, match_op)]
+                 if self.is_match(rule)]
         network_security_groups = \
             [nsg for nsg in network_security_groups if len(nsg['properties']['securityRules']) > 0]
         return network_security_groups
@@ -69,23 +69,19 @@ class SecurityRuleFilter(Filter):
         # destination port range is coming from Azure, existing rules, not policy input
         if len(dest_port_range) > 2:
             raise ValueError('Invalid range')
-        # Both FromPort and ToPort are specified, should fall within range
-        if self.from_port and self.to_port:
-            for port in dest_port_range:
-                if port > self.to_port or port < self.from_port:
-                    return False
-        # Just FromPort is specified, should be above FromPort
-        elif self.from_port:
+
+        # FromPort is specified, should be above FromPort
+        if self.from_port:
             for port in dest_port_range:
                 if port < self.from_port:
                     return False
-        # Just ToPort is specified, should be below ToPort
-        elif self.to_port:
+        # ToPort is specified, should be below ToPort
+        if self.to_port:
             for port in dest_port_range:
                 if port > self.to:
                     return False
         # OnlyPorts is specified, anything NOT included in OnlyPorts should return True
-        elif self.only_ports:
+        if self.only_ports:
             for op in self.only_ports:
                 if len(dest_port_range) > 1:
                     if dest_port_range[0] <= op >= dest_port_range[1]:
@@ -97,12 +93,11 @@ class SecurityRuleFilter(Filter):
         elif self.ports:
             if len(dest_port_range) > 1:
                 # self.ports needs to have ALL ports in range (inclusive) to match
-                for i in range(dest_port_range[0], dest_port_range[1] + 1):
-                    if i not in self.ports:
-                        return False
+                range_set = set(range(dest_port_range[0], dest_port_range[1] + 1))
+                ports_set = set(self.ports)
+                return range_set.issubset(ports_set)
             else:
-                if dest_port_range[0] not in self.ports:
-                    return False
+                return dest_port_range[0] in self.ports
         return True
 
     def is_ranges_match(self, security_rule):
@@ -132,12 +127,13 @@ class SecurityRuleFilter(Filter):
         IpProtocol
     '''
 
-    def is_match(self, security_rule, match_op):
-        direction_match = self.direction_key == security_rule['properties']['direction']
+    def is_match(self, security_rule):
+        if self.direction_key != security_rule['properties']['direction']:
+            return False
         ranges_match = self.is_ranges_match(security_rule)
         protocol_match = (self.ip_protocol is None) or \
                          (self.ip_protocol == security_rule['properties']['protocol'])
-        return direction_match and match_op([ranges_match, protocol_match])
+        return self.match_op([ranges_match, protocol_match])
 
 
 @NetworkSecurityGroup.filter_registry.register('ingress')
