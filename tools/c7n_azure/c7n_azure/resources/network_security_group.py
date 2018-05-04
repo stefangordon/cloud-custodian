@@ -15,8 +15,7 @@
 from c7n_azure.query import QueryResourceManager
 from c7n_azure.provider import resources
 from c7n.actions import BaseAction
-from c7n.filters import Filter, FilterValidationError
-from c7n.utils import type_schema
+from c7n.filters import Filter
 
 
 @resources.register('networksecuritygroup')
@@ -49,17 +48,19 @@ class SecurityRuleFilter(Filter):
         self.from_port = 'FromPort' in self.data and self.data['FromPort'] or None
         self.to_port = 'ToPort' in self.data and self.data['ToPort'] or None
         self.ports = 'Ports' in self.data and self.data['Ports'] or None
-        self.only_ports = (
-                'OnlyPorts' in self.data and self.data['OnlyPorts'] or None)
+        self.only_ports = ('OnlyPorts' in self.data and self.data['OnlyPorts'] or None)
         if self.from_port and self.to_port and self.from_port > self.to_port:
             raise ValueError('FromPort should be lower than ToPort')
-        if ((self.from_port or self.to_port) and (self.ports or self.only_ports)) or (self.ports and self.only_ports):
-            raise ValueError('Invalid port parameters. Choose port range (FromPort and/or ToPort) or '
-                             'specify specific ports (Ports or OnlyPorts)')
+        if ((self.from_port or self.to_port) and (self.ports or self.only_ports)) \
+                or (self.ports and self.only_ports):
+            raise ValueError(
+                'Invalid port parameters. Choose port range (FromPort and/or ToPort) '
+                'or specify specific ports (Ports or OnlyPorts)')
         match_op = self.data.get('match-operator', 'and') == 'and' and all or any
         for nsg in network_security_groups:
             nsg['properties']['securityRules'] = \
-                [rule for rule in nsg['properties']['securityRules'] if self.is_match(rule, match_op)]
+                [rule for rule in nsg['properties']['securityRules']
+                 if self.is_match(rule, match_op)]
         network_security_groups = \
             [nsg for nsg in network_security_groups if len(nsg['properties']['securityRules']) > 0]
         return network_security_groups
@@ -110,7 +111,8 @@ class SecurityRuleFilter(Filter):
                 [self.get_port_range(security_rule['properties']['destinationPortRange'])]
         else:
             dest_port_ranges = \
-                [self.get_port_range(range_str) for range_str in security_rule['properties']['destinationPortRanges']]
+                [self.get_port_range(range_str) for range_str
+                 in security_rule['properties']['destinationPortRanges']]
         for range in dest_port_ranges:
             if not self.is_range_match(range):
                 return False
@@ -133,7 +135,8 @@ class SecurityRuleFilter(Filter):
     def is_match(self, security_rule, match_op):
         direction_match = self.direction_key == security_rule['properties']['direction']
         ranges_match = self.is_ranges_match(security_rule)
-        protocol_match = (self.ip_protocol is None) or (self.ip_protocol == security_rule['properties']['protocol'])
+        protocol_match = (self.ip_protocol is None) or \
+                         (self.ip_protocol == security_rule['properties']['protocol'])
         return direction_match and match_op([ranges_match, protocol_match])
 
 
@@ -186,7 +189,8 @@ class RulesAction(BaseAction):
             resource_group = nsg['resourceGroup']
             for rule in nsg['properties']['securityRules']:
                 self.manager.log.info(
-                    'Updating access to \'%s\' for security rule \'%s\' in resource group \'%s\''.format(
+                    'Updating access to \'%s\' for security rule '
+                    '\'%s\' in resource group \'%s\''.format(
                         self.access_action, rule['name'], resource_group))
                 rule['properties']['access'] = self.access_action
                 self.manager.get_client().security_rules.create_or_update(
