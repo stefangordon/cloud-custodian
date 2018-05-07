@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from c7n_azure.query import QueryResourceManager
+from c7n_azure.arm import ArmResourceManager
 from c7n_azure.provider import resources
 
 
 @resources.register('publicip')
-class PublicIPAddress(QueryResourceManager):
+class PublicIPAddress(ArmResourceManager):
 
     class resource_type(object):
         service = 'azure.mgmt.network'

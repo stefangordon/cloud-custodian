@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from c7n_azure.query import QueryResourceManager
+from c7n_azure.arm import ArmResourceManager
 from c7n_azure.provider import resources
 from c7n.filters.core import ValueFilter, type_schema
 from c7n.filters.related import RelatedResourceFilter
 
 @resources.register('loadbalancer')
-class LoadBalancer(QueryResourceManager):
+class LoadBalancer(ArmResourceManager):
 
     class resource_type(object):
         service = 'azure.mgmt.network'

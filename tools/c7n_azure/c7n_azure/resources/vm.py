@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from c7n_azure.query import QueryResourceManager
+from c7n_azure.arm import ArmResourceManager
 from c7n_azure.provider import resources
 from c7n.filters.core import ValueFilter, type_schema
 
 @resources.register('vm')
-class VirtualMachine(QueryResourceManager):
+class VirtualMachine(ArmResourceManager):
 
     class resource_type(object):
         service = 'azure.mgmt.compute'
