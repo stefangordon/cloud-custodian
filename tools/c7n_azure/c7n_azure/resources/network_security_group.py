@@ -34,6 +34,9 @@ class NetworkSecurityGroup(QueryResourceManager):
 
 
 class SecurityRuleFilter(Filter):
+    """
+    Filter on Security Rules within a Network Security Group
+    """
     perm_attrs = set((
         'IpProtocol', 'FromPort', 'ToPort'))
 
@@ -42,29 +45,47 @@ class SecurityRuleFilter(Filter):
     attrs.add('match-operator')
 
     def validate(self):
+        # Check that variable values are valid
+        if self.data.get('FromPort') and self.data.get('ToPort') and \
+                self.data.get('FromPort') > self.data.get('ToPort'):
+            raise ValueError('FromPort should be lower than ToPort')
+        if (
+                (self.data.get('FromPort') or self.data.get('ToPort')) and
+                (self.data.get('Ports') or self.data.get('OnlyPorts'))
+        ) or (self.data.get('Ports') and self.data.get('OnlyPorts')):
+            raise ValueError(
+                'Invalid port parameters. Choose port range (FromPort and/or ToPort) '
+                'or specify specific ports (Ports or OnlyPorts)')
+
+    def process(self, network_security_groups, event=None):
+
+        # Get variables
         self.ip_protocol = self.data.get('IpProtocol')
         self.from_port = self.data.get('FromPort')
         self.to_port = self.data.get('ToPort')
         self.ports = self.data.get('Ports')
         self.only_ports = self.data.get('OnlyPorts')
         self.match_op = self.data.get('match-operator', 'and') == 'and' and all or any
-        if self.from_port and self.to_port and self.from_port > self.to_port:
-            raise ValueError('FromPort should be lower than ToPort')
-        if ((self.from_port or self.to_port) and (self.ports or self.only_ports)) \
-                or (self.ports and self.only_ports):
-            raise ValueError(
-                'Invalid port parameters. Choose port range (FromPort and/or ToPort) '
-                'or specify specific ports (Ports or OnlyPorts)')
 
-    def process(self, network_security_groups, event=None):
+        """
+        For each Network Security Group, set the 'securityRules' property to contain
+        only rules where there is a match, as defined in 'is_match'
+        """
         for nsg in network_security_groups:
             nsg['properties']['securityRules'] = \
                 [rule for rule in nsg['properties']['securityRules']
                  if self.is_match(rule)]
+        """
+        Set network_security_groups to include only those that still have 'securityRules'
+        after the filtering has taken place
+        """
         network_security_groups = \
             [nsg for nsg in network_security_groups if len(nsg['properties']['securityRules']) > 0]
         return network_security_groups
 
+    """
+    Check to see if range given matches range as defined by policy, return boolean
+    """
     def is_range_match(self, dest_port_range):
         # destination port range is coming from Azure, existing rules, not policy input
         if len(dest_port_range) > 2:
@@ -100,6 +121,9 @@ class SecurityRuleFilter(Filter):
                 return dest_port_range[0] in self.ports
         return True
 
+    """
+    Check to see if port ranges defined in security rule match range as defined by policy, return boolean
+    """
     def is_ranges_match(self, security_rule):
         if 'destinationPortRange' in security_rule['properties']:
             dest_port_ranges = \
@@ -116,17 +140,16 @@ class SecurityRuleFilter(Filter):
     def get_port_range(self, range_str):
         return [int(item) for item in range_str.split('-')]
 
-    '''
+    """
     Determine if SecurityRule matches criteria as entered in policy
 
     Currently supporting filters:
-        Ports
-        OnlyPorts
-        FromPort
-        ToPort
-        IpProtocol
-    '''
-
+        Ports - Specific Ports to target
+        OnlyPorts - Ports to IGNORE
+        FromPort - Lower bound of port range (inclusive)
+        ToPort - Upper bound of port range (inclusive)
+        IpProtocol - TCP/UDP protocol
+    """
     def is_match(self, security_rule):
         if self.direction_key != security_rule['properties']['direction']:
             return False
@@ -150,7 +173,6 @@ class IngressFilter(SecurityRuleFilter):
             'FromPort': {'type': 'integer'},
             'ToPort': {'type': 'integer'},
             'IpProtocol': {'type': 'string', 'enum': ['TCP', 'UDP']}
-            # 'SelfReference': {'type': 'boolean'} TODO What does this mean in AWS?
         },
         'required': ['type']
     }
@@ -177,6 +199,9 @@ class EgressFilter(SecurityRuleFilter):
 
 
 class RulesAction(BaseAction):
+    """
+    Action to perform on SecurityRules within a Network Security Group
+    """
 
     def process(self, network_security_groups):
 
@@ -199,9 +224,15 @@ class RulesAction(BaseAction):
 
 @NetworkSecurityGroup.action_registry.register('close')
 class CloseRules(RulesAction):
+    """
+    Deny access to Security Rule
+    """
     access_action = 'Deny'
 
 
 @NetworkSecurityGroup.action_registry.register('open')
 class OpenRules(RulesAction):
+    """
+    Allow access to Security Rule
+    """
     access_action = 'Allow'
