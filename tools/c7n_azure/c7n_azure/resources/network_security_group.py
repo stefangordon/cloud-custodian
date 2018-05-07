@@ -122,7 +122,7 @@ class SecurityRuleFilter(Filter):
         return True
 
     """
-    Check to see if port ranges defined in security rule match range as defined by policy, return boolean
+    Check to see if port ranges defined in security rule match range as defined by policy
     """
     def is_ranges_match(self, security_rule):
         if 'destinationPortRange' in security_rule['properties']:
