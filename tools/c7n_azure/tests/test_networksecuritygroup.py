@@ -64,4 +64,43 @@ class NetworkSecurityGroupTest(BaseTest):
         self.assertEqual(len(resources[0]['properties']['securityRules']), 1)
 
 
+    @arm_template('networksecuritygroup.json')
+    def test_invalid_policy_range(self):
+        self.assertRaises(ValueError, lambda: self.load_policy({
+            'name': 'test-azure-network-security-group',
+            'resource': 'azure.networksecuritygroup',
+            'filters': [
+                {'type': 'ingress',
+                 'FromPort': 22,
+                 'ToPort': 20}],
+            'actions': [
+                {'type': 'close'}]}))
+
+
+    @arm_template('networksecuritygroup.json')
+    def test_invalid_policy_params(self):
+        self.assertRaises(ValueError, lambda: self.load_policy({
+            'name': 'test-azure-network-security-group',
+            'resource': 'azure.networksecuritygroup',
+            'filters': [
+                {'type': 'ingress',
+                 'FromPort': 22,
+                 'ToPort': 20,
+                 'OnlyPorts': [20, 30],
+                 'Ports': [8080]}],
+            'actions': [
+                {'type': 'close'}]}))
+
+    @arm_template('networksecuritygroup.json')
+    def test_invalid_policy_params_only_ports(self):
+        self.assertRaises(ValueError, lambda: self.load_policy({
+            'name': 'test-azure-network-security-group',
+            'resource': 'azure.networksecuritygroup',
+            'filters': [
+                {'type': 'ingress',
+                 'OnlyPorts': [20, 30],
+                 'Ports': [8080]}],
+            'actions': [
+                {'type': 'close'}]}))
+
 
