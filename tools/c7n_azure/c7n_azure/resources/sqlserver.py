@@ -19,14 +19,7 @@ from c7n_azure.provider import resources
 @resources.register('sqlserver')
 class Vnet(ArmResourceManager):
 
-    class resource_type(object):
+    class resource_type(ArmResourceManager.resource_type):
         service = 'azure.mgmt.sql'
         client = 'SqlManagementClient'
         enum_spec = ('servers', 'list')
-        id = 'id'
-        name = 'name'
-        default_report_fields = (
-            'name',
-            'location',
-            'resourceGroup'
-        )

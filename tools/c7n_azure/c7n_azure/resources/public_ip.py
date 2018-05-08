@@ -19,13 +19,11 @@ from c7n_azure.provider import resources
 @resources.register('publicip')
 class PublicIPAddress(ArmResourceManager):
 
-    class resource_type(object):
+    class resource_type(ArmResourceManager.resource_type):
         service = 'azure.mgmt.network'
         client = 'NetworkManagementClient'
         enum_spec = ('public_ip_addresses', 'list_all')
-        id = 'id'
         type = 'publicip'
-        name = 'name'
         default_report_fields = (
             'name',
             'location',

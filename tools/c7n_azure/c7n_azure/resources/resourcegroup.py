@@ -20,12 +20,11 @@ from c7n.utils import type_schema
 
 @resources.register('resourcegroup')
 class ResourceGroup(ArmResourceManager):
-    class resource_type(object):
+
+    class resource_type(ArmResourceManager.resource_type):
         service = 'azure.mgmt.resource'
         client = 'ResourceManagementClient'
         enum_spec = ('resource_groups', 'list')
-        id = 'id'
-        name = 'name'
 
 
 @ResourceGroup.filter_registry.register('empty-group')

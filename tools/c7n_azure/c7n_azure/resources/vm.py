@@ -19,12 +19,10 @@ from c7n.filters.core import ValueFilter, type_schema
 @resources.register('vm')
 class VirtualMachine(ArmResourceManager):
 
-    class resource_type(object):
+    class resource_type(ArmResourceManager.resource_type):
         service = 'azure.mgmt.compute'
         client = 'ComputeManagementClient'
         enum_spec = ('virtual_machines', 'list_all')
-        id = 'id'
-        name = 'name'
         default_report_fields = (
             'name',
             'location',

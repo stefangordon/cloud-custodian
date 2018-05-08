@@ -20,18 +20,12 @@ from c7n.filters.related import RelatedResourceFilter
 @resources.register('loadbalancer')
 class LoadBalancer(ArmResourceManager):
 
-    class resource_type(object):
+    class resource_type(ArmResourceManager.resource_type):
         service = 'azure.mgmt.network'
         client = 'NetworkManagementClient'
         enum_spec = ('load_balancers', 'list_all')
-        id = 'id'
         type = 'loadbalancer'
-        name = 'name'
-        default_report_fields = (
-            'name',
-            'location',
-            'resourceGroup'
-        )
+
 
 @LoadBalancer.filter_registry.register('frontend-public-ip')
 class FrontEndIp(RelatedResourceFilter):
