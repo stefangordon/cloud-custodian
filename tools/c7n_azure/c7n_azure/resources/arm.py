@@ -14,22 +14,13 @@
 
 import six
 from c7n_azure.query import QueryResourceManager, QueryMeta
-from c7n_azure.actions import Tag
+from c7n_azure.actions import Tag, AutoTagUser
 from c7n_azure.utils import ResourceIdParser
 from c7n_azure.provider import resources
 
 
-class ArmResourceQueryMeta(QueryMeta):
-    """metaclass to add actions/filters common for ARM resources."""
-    def __new__(cls, name, parents, attrs):
-        query_meta = super(ArmResourceQueryMeta, cls).__new__(cls, name, parents, attrs)
-        if hasattr(query_meta, 'action_registry'):
-            query_meta.action_registry.register('tag', Tag)
-        return query_meta
-
-
-@six.add_metaclass(ArmResourceQueryMeta)
 @resources.register('armresource')
+@six.add_metaclass(QueryMeta)
 class ArmResourceManager(QueryResourceManager):
 
     class resource_type(object):
@@ -50,4 +41,14 @@ class ArmResourceManager(QueryResourceManager):
                 resource['resourceGroup'] = ResourceIdParser.get_resource_group(resource['id'])
         return resources
 
+    @staticmethod
+    def register_arm_specific(registry, _):
+        for resource in registry.keys():
+            klass = registry.get(resource)
+            if issubclass(klass, ArmResourceManager):
+                klass.action_registry.register('tag', Tag)
+                klass.action_registry.register('auto-tag-user', AutoTagUser)
+
+
+resources.subscribe(resources.EVENT_FINAL, ArmResourceManager.register_arm_specific)
 
