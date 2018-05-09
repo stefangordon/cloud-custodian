@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from c7n_azure.query import QueryResourceManager
+from c7n_azure.resources.arm import ArmResourceManager
 from c7n_azure.provider import resources
 from c7n.actions import BaseAction
 from c7n.filters import Filter
 
 
 @resources.register('networksecuritygroup')
-class NetworkSecurityGroup(QueryResourceManager):
+class NetworkSecurityGroup(ArmResourceManager):
     class resource_type(object):
         service = 'azure.mgmt.network'
         client = 'NetworkManagementClient'
