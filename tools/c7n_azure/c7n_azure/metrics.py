@@ -14,6 +14,7 @@
 
 from datetime import datetime, timedelta
 
+
 class Metrics(object):
 
     def __init__(self, client, resource_id):
@@ -23,6 +24,29 @@ class Metrics(object):
             resource_id = resource_id[1:]
         self.resource_id = resource_id
 
+    '''
+    If no metric is specified, returns object for all metrics
+    available to resource. Schema:
+    
+    {
+        'Metric 1 (unit value)': [
+            {
+                'time_stamp': (datetime for timestamp),
+                'total': (measurement of unit)
+            },
+            {
+                'time_stamp': (datetime for timestamp),
+                'total': (measurement of unit)
+            },
+        ],
+        'Metric 2 (unit value)': [
+            ...
+        ],
+        ...          
+    }
+    
+    If no timespan is specified, defaults to last 24 hours
+    '''
     def metric_data(self, start_time=None, end_time=None,
                 interval=None, metric=None, aggregation=None):
 
