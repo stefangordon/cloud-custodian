@@ -3,10 +3,10 @@ trigger:
 
 variables:
 - group: CustodianCoreCI
-- name: TOX_TESTENV_PASSENV
-  value: PIP_DOWNLOAD_CACHE
-- name: PIP_DOWNLOAD_CACHE
-  value: $(Pipeline.Workspace)/.pip
+- name: WINDOWS_CACHE_DIR
+  value: $(LOCALAPPDATA)\pip\cache
+- name: LINUX_CACHE_DIR
+  value: ~/.cache/pip
 
 jobs:
 - job: 'Lint'
@@ -51,7 +51,7 @@ jobs:
         c7n-tox
         $(python.version)
         $(Agent.OS)
-      path: $(PIP_DOWNLOAD_CACHE)
+      path: $(LINUX_CACHE_DIR)
 
   - checkout: self
     fetchDepth: 2
@@ -113,7 +113,7 @@ jobs:
         c7n-tox
         $(python.version)
         $(Agent.OS)
-      path: $(PIP_DOWNLOAD_CACHE)
+      path: $(WINDOWS_CACHE_DIR)
 
   - checkout: self
     fetchDepth: 2
