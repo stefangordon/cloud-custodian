@@ -45,9 +45,6 @@ jobs:
     maxParallel: 3
 
   steps:
-  - script: python -c "from pip._internal.utils.appdirs import user_cache_dir; print(user_cache_dir('pip'))"
-    displayName: 'WHERE IS LINUX CACHE'
-
   - task: CacheBeta@0
     inputs:
       key: |
@@ -70,6 +67,9 @@ jobs:
 
   - script: tox --notest
     displayName: 'Install Dependencies'
+
+  - script: python -c "from pip._internal.utils.appdirs import user_cache_dir; print(user_cache_dir('pip'))"
+    displayName: 'WHERE IS LINUX CACHE'
 
   - script: tox
     displayName: 'Tox'
