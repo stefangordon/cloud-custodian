@@ -3,7 +3,7 @@ trigger:
 
 variables:
 - group: CustodianCoreCI
-- WINDOWS_CACHE_DIR: %LOCALAPPDATA%\pip\cache
+- WINDOWS_CACHE_DIR: $(LOCALAPPDATA)\pip\cache
 - LINUX_CACHE_DIR: ~/.cache/pip
 
 jobs:
