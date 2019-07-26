@@ -3,6 +3,8 @@ trigger:
 
 variables:
 - group: CustodianCoreCI
+- name: TOX_TESTENV_PASSENV
+  value: PIP_DOWNLOAD_CACHE
 - name: PIP_DOWNLOAD_CACHE
   value: $(Pipeline.Workspace)/.pip
 
