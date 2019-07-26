@@ -3,10 +3,8 @@ trigger:
 
 variables:
 - group: CustodianCoreCI
-- name: WINDOWS_CACHE_DIR
-  value: $(LOCALAPPDATA)\pip\cache
-- name: LINUX_CACHE_DIR
-  value: ~/.cache/pip
+- name: PIP_DOWNLOAD_CACHE
+  value: $(Pipeline.Workspace)/.pip
 
 jobs:
 - job: 'Lint'
@@ -51,7 +49,7 @@ jobs:
         c7n-tox
         $(python.version)
         $(Agent.OS)
-      path: $(LINUX_CACHE_DIR)
+      path: $(PIP_DOWNLOAD_CACHE)
 
   - checkout: self
     fetchDepth: 2
@@ -113,7 +111,7 @@ jobs:
         c7n-tox
         $(python.version)
         $(Agent.OS)
-      path: $(WINDOWS_CACHE_DIR)
+      path: $(PIP_DOWNLOAD_CACHE)
 
   - checkout: self
     fetchDepth: 2
