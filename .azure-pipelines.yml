@@ -3,8 +3,10 @@ trigger:
 
 variables:
 - group: CustodianCoreCI
-- WINDOWS_CACHE_DIR: $(LOCALAPPDATA)\pip\cache
-- LINUX_CACHE_DIR: ~/.cache/pip
+- name: WINDOWS_CACHE_DIR
+  value: $(LOCALAPPDATA)\pip\cache
+- name: LINUX_CACHE_DIR
+  value: ~/.cache/pip
 
 jobs:
 - job: 'Lint'
