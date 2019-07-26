@@ -3,6 +3,8 @@ trigger:
 
 variables:
 - group: CustodianCoreCI
+- WINDOWS_CACHE_DIR: %LOCALAPPDATA%\pip\cache
+- LINUX_CACHE_DIR: ~/.cache/pip
 
 jobs:
 - job: 'Lint'
@@ -41,6 +43,14 @@ jobs:
     maxParallel: 3
 
   steps:
+  - task: CacheBeta@0
+    inputs:
+      key: |
+        c7n-tox
+        $(python.version)
+        $(Agent.OS)
+      path: $(LINUX_CACHE_DIR)
+
   - checkout: self
     fetchDepth: 2
 
@@ -95,6 +105,14 @@ jobs:
     maxParallel: 3
 
   steps:
+  - task: CacheBeta@0
+    inputs:
+      key: |
+        c7n-tox
+        $(python.version)
+        $(Agent.OS)
+      path: $(WINDOWS_CACHE_DIR)
+
   - checkout: self
     fetchDepth: 2
 
