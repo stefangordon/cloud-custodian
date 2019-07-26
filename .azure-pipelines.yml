@@ -6,7 +6,7 @@ variables:
 - name: WINDOWS_CACHE_DIR
   value: $(LOCALAPPDATA)\pip\cache
 - name: LINUX_CACHE_DIR
-  value: ~/.cache/pip
+  value: /home/vsts/.cache/pip
 
 jobs:
 - job: 'Lint'
@@ -67,9 +67,6 @@ jobs:
 
   - script: tox --notest
     displayName: 'Install Dependencies'
-
-  - script: python -c "from pip._internal.utils.appdirs import user_cache_dir; print(user_cache_dir('pip'))"
-    displayName: 'WHERE IS LINUX CACHE'
 
   - script: tox
     displayName: 'Tox'
