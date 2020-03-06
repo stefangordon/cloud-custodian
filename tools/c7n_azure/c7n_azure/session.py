@@ -53,10 +53,11 @@ log = logging.getLogger('custodian.azure.session')
 class Session(object):
 
     def __init__(self, subscription_id=None, authorization_file=None,
-                 resource=constants.RESOURCE_ACTIVE_DIRECTORY):
+                 base_url=constants.RESOURCE_ACTIVE_DIRECTORY, resource=None):
         """
         :param subscription_id: If provided overrides environment variables.
         :param authorization_file: Path to file populated from 'get_functions_auth_string'
+        :param base_url: REST Service base URL. Changes per Azure Cloud
         :param resource: Resource endpoint for OAuth token.
         """
 
@@ -68,6 +69,7 @@ class Session(object):
         self.resource_namespace = resource
         self.authorization_file = authorization_file
         self._auth_params = {}
+        self.base_url = base_url
 
     @property
     def auth_params(self):
@@ -96,8 +98,12 @@ class Session(object):
             CLIProvider
         ]
 
+        auth_namespace = self.base_url
+        if self.resource_namespace:
+            auth_namespace = self.resource_namespace
+
         for provider in token_providers:
-            instance = provider(self._auth_params, self.resource_namespace)
+            instance = provider(self._auth_params, auth_namespace)
             if instance.is_available():
                 result = instance.authenticate()
                 self.subscription_id = result.subscription_id
@@ -157,7 +163,7 @@ class Session(object):
 
         # Override credential type for KV auth
         # https://github.com/Azure/azure-sdk-for-python/issues/5096
-        if self.resource_namespace == constants.RESOURCE_VAULT:
+        if self.resource_namespace and 'vault' in self.resource_namespace:
             access_token = AccessToken(token=self.get_bearer_token())
             self.credentials = KeyVaultAuthentication(lambda _1, _2, _3: access_token)
 
@@ -165,6 +171,7 @@ class Session(object):
         return Session(
             subscription_id=self.subscription_id_override,
             authorization_file=self.authorization_file,
+            base_url=self.base_url,
             resource=resource)
 
     @lru_cache()
@@ -181,7 +188,9 @@ class Session(object):
             klass_parameters = inspect.signature(klass).parameters
 
         if 'subscription_id' in klass_parameters:
-            client = klass(credentials=self.credentials, subscription_id=self.subscription_id)
+            client = klass(credentials=self.credentials,
+            subscription_id=self.subscription_id,
+            base_url=self.base_url)
         else:
             client = klass(credentials=self.credentials)
 
@@ -262,7 +271,7 @@ class Session(object):
                 client_id=data['credentials']['client_id'],
                 secret=data['credentials']['secret'],
                 tenant=self.tenant_id,
-                resource=self.resource_namespace
+                resource=self.base_url
             ), data.get('subscription', None))
 
     def get_functions_auth_string(self, target_subscription_id):

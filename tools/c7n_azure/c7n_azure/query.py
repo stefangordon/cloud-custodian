@@ -348,7 +348,7 @@ class ChildResourceManager(QueryResourceManager):
     def get_session(self):
         if self._session is None:
             session = super(ChildResourceManager, self).get_session()
-            if self.resource_type.resource != constants.RESOURCE_ACTIVE_DIRECTORY:
+            if 'management' not in self.resource_type.resource:
                 session = session.get_session_for_resource(self.resource_type.resource)
             self._session = session
 
