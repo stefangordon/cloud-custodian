@@ -396,7 +396,7 @@ class SessionTest(BaseTest):
     def test_resolve_auth_endpoint(self):
         s = Session()
         s.resolve_auth_endpoint(constants.DEFAULT_AUTH_ENDPOINT)
-        self.assertEqual('https://management.core.windows.net', s.resource_namespace)
+        self.assertEqual('https://management.core.windows.net/', s.resource_namespace)
         self.assertTrue(s.keyvault_auth_override)
 
     def test_resolve_auth_endpoint_vault(self):
@@ -408,4 +408,4 @@ class SessionTest(BaseTest):
     def test_resolve_auth_endpoint_storage(self):
         s = Session()
         s.resolve_auth_endpoint(constants.STORAGE_AUTH_ENDPOINT)
-        self.assertEqual('https://storage.azure.com', s.resource_namespace)
+        self.assertEqual('https://storage.azure.com/', s.resource_namespace)
