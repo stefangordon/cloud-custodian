@@ -39,7 +39,8 @@ class ProviderTest(BaseTest):
             self.assertEqual(AZURE_PUBLIC_CLOUD, azure.cloud)
             session = azure.get_session_factory(options)()
 
-        self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.resource_manager, session.base_url)
+        self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id,
+                         session.resource_namespace)
 
     def test_initialize_default_azure_cloud_flag(self):
         with patch('c7n_azure.session.Session.get_subscription_id'):
@@ -49,7 +50,8 @@ class ProviderTest(BaseTest):
             self.assertEqual(AZURE_PUBLIC_CLOUD, azure.cloud)
             session = azure.get_session_factory(options)()
 
-        self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.resource_manager, session.base_url)
+        self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id,
+                         session.resource_namespace)
 
     def test_initialize_china_azure_cloud(self):
         with patch('c7n_azure.session.Session.get_subscription_id'):
@@ -59,7 +61,8 @@ class ProviderTest(BaseTest):
             self.assertEqual(AZURE_CHINA_CLOUD, azure.cloud)
             session = azure.get_session_factory(options)()
 
-        self.assertEqual(AZURE_CHINA_CLOUD.endpoints.resource_manager, session.base_url)
+        self.assertEqual(AZURE_CHINA_CLOUD.endpoints.active_directory_resource_id,
+                         session.resource_namespace)
 
     def test_initialize_germany_azure_cloud(self):
         with patch('c7n_azure.session.Session.get_subscription_id'):
@@ -69,17 +72,19 @@ class ProviderTest(BaseTest):
             self.assertEqual(AZURE_GERMAN_CLOUD, azure.cloud)
             session = azure.get_session_factory(options)()
 
-        self.assertEqual(AZURE_GERMAN_CLOUD.endpoints.resource_manager, session.base_url)
+        self.assertEqual(AZURE_GERMAN_CLOUD.endpoints.active_directory_resource_id,
+                         session.resource_namespace)
 
     def test_initialize_usgov_azure_cloud(self):
         with patch('c7n_azure.session.Session.get_subscription_id'):
-            options = Config.empty(regions=['AzureUSGov'])
+            options = Config.empty(regions=['AzureUSGovernment'])
             azure = Azure()
             azure.initialize(options)
             self.assertEqual(AZURE_US_GOV_CLOUD, azure.cloud)
             session = azure.get_session_factory(options)()
 
-        self.assertEqual(AZURE_US_GOV_CLOUD.endpoints.resource_manager, session.base_url)
+        self.assertEqual(AZURE_US_GOV_CLOUD.endpoints.active_directory_resource_id,
+                         session.resource_namespace)
 
     def test_exit_on_nonexistent_azure_cloud(self):
         with patch('c7n_azure.session.Session.get_subscription_id'):

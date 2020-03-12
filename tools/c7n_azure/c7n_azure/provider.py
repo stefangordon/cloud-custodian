@@ -39,13 +39,14 @@ class Azure(Provider):
         'AzureCloud': AZURE_PUBLIC_CLOUD,
         'AzureChinaCloud': AZURE_CHINA_CLOUD,
         'AzureGermanyCloud': AZURE_GERMAN_CLOUD,
-        'AzureUSGov': AZURE_US_GOV_CLOUD
+        'AzureUSGovernment': AZURE_US_GOV_CLOUD
     }
 
     cloud = None
 
     def initialize(self, options):
-        self._set_cloud(options)
+        self.cloud = self._get_cloud(options)
+
         if options['account_id'] is None:
             session = local_session(self.get_session_factory(options))
             options['account_id'] = session.get_subscription_id()
@@ -56,39 +57,31 @@ class Azure(Provider):
         return policy_collection
 
     def get_session_factory(self, options):
-        base_url = self.get_cloud_base_url()
-
         return partial(Session,
                        subscription_id=options.account_id,
                        authorization_file=options.authorization_file,
-                       base_url=base_url)
+                       cloud_endpoints=self.cloud)
 
-    def _set_cloud(self, options):
-        if self.cloud:
-            return
-
+    def _get_cloud(self, options):
         cloud_list = options.get('regions')
 
         if not cloud_list:
-            self.cloud = AZURE_PUBLIC_CLOUD
-            return
+            return AZURE_PUBLIC_CLOUD
+        elif len(cloud_list) > 1:
+            log.error('Multiple Azure Clouds provided. Please pass in only one.')
+            sys.exit(1)
 
         # Only support passing in one cloud at a time
         cloud = self.region_to_cloud.get(cloud_list[0])
 
         if cloud:
-            self.cloud = cloud
+            return cloud
         else:
             log.error('Region Flag: %s not recognized, please choose an Azure Cloud from'
-                      'the following: AzureCloud, AzureChinaCloud, AzureGermanyCloud, AzureUSGov'
+                      'the following: AzureCloud, AzureChinaCloud, AzureGermanyCloud, '
+                      'AzureUSGovernment'
                       % cloud_list[0])
             sys.exit(1)
-
-    def get_cloud_base_url(self):
-        if self.cloud:
-            return self.cloud.endpoints.resource_manager
-
-        return None
 
 
 resources = Azure.resources

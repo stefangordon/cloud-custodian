@@ -18,7 +18,7 @@ from azure.common import AzureHttpError
 from azure.storage.common import TokenCredential
 from azure.storage.blob import BlockBlobService
 from azure.storage.queue import QueueService
-from c7n_azure.constants import RESOURCE_STORAGE
+from c7n_azure.constants import STORAGE_AUTH_ENDPOINT
 from six.moves.urllib.parse import urlparse
 
 try:
@@ -53,7 +53,9 @@ class StorageUtilities(object):
 
         blob_service = BlockBlobService(
             account_name=storage.storage_name,
-            token_credential=storage.token)
+            token_credential=storage.token,
+            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+        )
         blob_service.create_container(storage.container_name)
         return blob_service, storage.container_name, storage.file_prefix
 
@@ -70,7 +72,8 @@ class StorageUtilities(object):
         return BlockBlobService(
             account_name=name,
             account_key=primary_key,
-            token_credential=token
+            token_credential=token,
+            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
         )
 
     @staticmethod
@@ -80,7 +83,9 @@ class StorageUtilities(object):
 
         queue_service = QueueService(
             account_name=storage.storage_name,
-            token_credential=storage.token)
+            token_credential=storage.token,
+            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+        )
         queue_service.create_queue(storage.container_name)
 
         return queue_service, storage.container_name
@@ -91,7 +96,9 @@ class StorageUtilities(object):
         token = StorageUtilities.get_storage_token(session)
         queue_service = QueueService(
             account_name=storage_account.name,
-            token_credential=token)
+            token_credential=token,
+            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+        )
         return queue_service
 
     @staticmethod
@@ -101,7 +108,9 @@ class StorageUtilities(object):
 
         queue_service = QueueService(
             account_name=storage_account.name,
-            token_credential=token)
+            token_credential=token,
+            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+        )
         return queue_service.create_queue(name)
 
     @staticmethod
@@ -110,7 +119,9 @@ class StorageUtilities(object):
         token = StorageUtilities.get_storage_token(session)
         queue_service = QueueService(
             account_name=storage_account.name,
-            token_credential=token)
+            token_credential=token,
+            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+        )
         return queue_service.delete_queue(name)
 
     @staticmethod
@@ -136,8 +147,8 @@ class StorageUtilities(object):
     @staticmethod
     @lru_cache()
     def get_storage_token(session):
-        if session.resource_namespace != RESOURCE_STORAGE:
-            session = session.get_session_for_resource(RESOURCE_STORAGE)
+        if session.resource_namespace != STORAGE_AUTH_ENDPOINT:
+            session = session.get_session_for_resource(STORAGE_AUTH_ENDPOINT)
         return TokenCredential(session.get_bearer_token())
 
     @staticmethod

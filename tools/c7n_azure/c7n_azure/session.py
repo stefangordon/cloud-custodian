@@ -28,8 +28,10 @@ from azure.common.credentials import (BasicTokenAuthentication,
                                       ServicePrincipalCredentials)
 from azure.keyvault import KeyVaultAuthentication, AccessToken
 from c7n_azure import constants
+from c7n_azure.constants import DEFAULT_AUTH_ENDPOINT
 from c7n_azure.utils import (ResourceIdParser, StringUtils, custodian_azure_send_override,
-                             ManagedGroupHelper, get_keyvault_secret)
+                             ManagedGroupHelper, get_keyvault_secret, get_keyvault_auth_endpoint)
+from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD
 from msrest.exceptions import AuthenticationError
 from msrestazure.azure_active_directory import MSIAuthentication
 from requests import HTTPError
@@ -53,12 +55,12 @@ log = logging.getLogger('custodian.azure.session')
 class Session(object):
 
     def __init__(self, subscription_id=None, authorization_file=None,
-                 base_url=constants.RESOURCE_ACTIVE_DIRECTORY, resource=None):
+                 cloud_endpoints=AZURE_PUBLIC_CLOUD, auth_endpoint=DEFAULT_AUTH_ENDPOINT):
         """
         :param subscription_id: If provided overrides environment variables.
         :param authorization_file: Path to file populated from 'get_functions_auth_string'
-        :param base_url: REST Service base URL. Changes per Azure Cloud
-        :param resource: Resource endpoint for OAuth token.
+        :param cloud_endpoints: List of endpoints for specified Azure Cloud. Defaults to public.
+        :param auth_endpoint: Resource endpoint for OAuth token.
         """
 
         self._provider_cache = {}
@@ -66,10 +68,11 @@ class Session(object):
         self.credentials = None
         self.subscription_id = None
         self.tenant_id = None
-        self.resource_namespace = resource
+        self.endpoints = cloud_endpoints
+        self.keyvault_auth_override = None
+        self.resolve_auth_endpoint(auth_endpoint)
         self.authorization_file = authorization_file
         self._auth_params = {}
-        self.base_url = base_url
 
     @property
     def auth_params(self):
@@ -85,7 +88,8 @@ class Session(object):
             if keyvault_secret_id:
                 self._auth_params.update(
                     json.loads(
-                        get_keyvault_secret(keyvault_client_id, keyvault_secret_id)))
+                        get_keyvault_secret(keyvault_client_id, keyvault_secret_id, self.endpoints)
+                    ))
         except HTTPError as e:
             e.message = 'Failed to retrieve SP credential ' \
                         'from Key Vault with client id: {0}'.format(keyvault_client_id)
@@ -98,12 +102,8 @@ class Session(object):
             CLIProvider
         ]
 
-        auth_namespace = self.base_url
-        if self.resource_namespace:
-            auth_namespace = self.resource_namespace
-
         for provider in token_providers:
-            instance = provider(self._auth_params, auth_namespace)
+            instance = provider(self._auth_params, self.resource_namespace)
             if instance.is_available():
                 result = instance.authenticate()
                 self.subscription_id = result.subscription_id
@@ -163,7 +163,7 @@ class Session(object):
 
         # Override credential type for KV auth
         # https://github.com/Azure/azure-sdk-for-python/issues/5096
-        if self.resource_namespace and 'vault' in self.resource_namespace:
+        if self.keyvault_auth_override:
             access_token = AccessToken(token=self.get_bearer_token())
             self.credentials = KeyVaultAuthentication(lambda _1, _2, _3: access_token)
 
@@ -171,8 +171,8 @@ class Session(object):
         return Session(
             subscription_id=self.subscription_id_override,
             authorization_file=self.authorization_file,
-            base_url=self.base_url,
-            resource=resource)
+            cloud_endpoints=self.endpoints,
+            auth_endpoint=resource)
 
     @lru_cache()
     def client(self, client):
@@ -190,7 +190,7 @@ class Session(object):
         if 'subscription_id' in klass_parameters:
             client = klass(credentials=self.credentials,
             subscription_id=self.subscription_id,
-            base_url=self.base_url)
+            base_url=self.endpoints.endpoints.resource_manager)
         else:
             client = klass(credentials=self.credentials)
 
@@ -311,6 +311,17 @@ class Session(object):
                 "supported auth mechanism for deploying functions.")
 
         return json.dumps(function_auth_params, indent=2)
+
+    def resolve_auth_endpoint(self, endpoint):
+        if endpoint == constants.VAULT_AUTH_ENDPOINT:
+            self.resource_namespace = get_keyvault_auth_endpoint(self.endpoints)
+            self.keyvault_auth_override = True
+
+        elif endpoint == constants.STORAGE_AUTH_ENDPOINT:
+            # These endpoints are not Cloud specific, but the suffixes are
+            self.resource_namespace = constants.STORAGE_AUTH_ENDPOINT
+        else:
+            self.resource_namespace = getattr(self.endpoints.endpoints, endpoint)
 
 
 @six.add_metaclass(abc.ABCMeta)
