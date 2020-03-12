@@ -68,11 +68,10 @@ class Session(object):
         self.credentials = None
         self.subscription_id = None
         self.tenant_id = None
-        self.endpoints = cloud_endpoints
+        self.endpoints = cloud_endpoints or AZURE_PUBLIC_CLOUD
         self.keyvault_auth_override = None
         self.resource_namespace = None
-        if self.endpoints:
-            self.resolve_auth_endpoint(auth_endpoint)
+        self.resolve_auth_endpoint(auth_endpoint)
         self.authorization_file = authorization_file
         self._auth_params = {}
 
