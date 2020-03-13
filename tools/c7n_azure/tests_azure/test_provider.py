@@ -36,7 +36,8 @@ class ProviderTest(BaseTest):
             options = Config.empty()
             azure = Azure()
             azure.initialize(options)
-            self.assertEqual(AZURE_PUBLIC_CLOUD, azure.cloud)
+            self.assertEqual(AZURE_PUBLIC_CLOUD, azure.cloud_endpoints)
+            self.assertEqual(AZURE_PUBLIC_CLOUD.name, options['region'])
             session = azure.get_session_factory(options)()
 
         self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id,
@@ -47,7 +48,8 @@ class ProviderTest(BaseTest):
             options = Config.empty(regions=[DEFAULT_AZURE_CLOUD])
             azure = Azure()
             azure.initialize(options)
-            self.assertEqual(AZURE_PUBLIC_CLOUD, azure.cloud)
+            self.assertEqual(AZURE_PUBLIC_CLOUD, azure.cloud_endpoints)
+            self.assertEqual(AZURE_PUBLIC_CLOUD.name, options['region'])
             session = azure.get_session_factory(options)()
 
         self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id,
@@ -58,7 +60,8 @@ class ProviderTest(BaseTest):
             options = Config.empty(regions=['AzureChinaCloud'])
             azure = Azure()
             azure.initialize(options)
-            self.assertEqual(AZURE_CHINA_CLOUD, azure.cloud)
+            self.assertEqual(AZURE_CHINA_CLOUD, azure.cloud_endpoints)
+            self.assertEqual(AZURE_CHINA_CLOUD.name, options['region'])
             session = azure.get_session_factory(options)()
 
         self.assertEqual(AZURE_CHINA_CLOUD.endpoints.active_directory_resource_id,
@@ -69,7 +72,8 @@ class ProviderTest(BaseTest):
             options = Config.empty(regions=['AzureGermanyCloud'])
             azure = Azure()
             azure.initialize(options)
-            self.assertEqual(AZURE_GERMAN_CLOUD, azure.cloud)
+            self.assertEqual(AZURE_GERMAN_CLOUD, azure.cloud_endpoints)
+            self.assertEqual(AZURE_GERMAN_CLOUD.name, options['region'])
             session = azure.get_session_factory(options)()
 
         self.assertEqual(AZURE_GERMAN_CLOUD.endpoints.active_directory_resource_id,
@@ -80,7 +84,8 @@ class ProviderTest(BaseTest):
             options = Config.empty(regions=['AzureUSGovernment'])
             azure = Azure()
             azure.initialize(options)
-            self.assertEqual(AZURE_US_GOV_CLOUD, azure.cloud)
+            self.assertEqual(AZURE_US_GOV_CLOUD, azure.cloud_endpoints)
+            self.assertEqual(AZURE_US_GOV_CLOUD.name, options['region'])
             session = azure.get_session_factory(options)()
 
         self.assertEqual(AZURE_US_GOV_CLOUD.endpoints.active_directory_resource_id,

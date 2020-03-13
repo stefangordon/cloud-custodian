@@ -165,7 +165,7 @@ Cloud Custodian supports four different Cloud offerings:
 3. Azure Germany Cloud (`AzureGermanyCloud`)
 4. Azure US Government (`AzureUSGovernment`)
 
-In order to target these Clouds, pass the cloud name in the `--region` flag
+In order to target these Clouds, pass the cloud name in the ``--region`` flag
 
 .. code-block:: bash
 

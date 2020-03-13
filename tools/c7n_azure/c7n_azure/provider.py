@@ -42,10 +42,11 @@ class Azure(Provider):
         'AzureUSGovernment': AZURE_US_GOV_CLOUD
     }
 
-    cloud = None
+    cloud_endpoints = None
 
     def initialize(self, options):
-        self.cloud = self._get_cloud(options)
+        self.cloud_endpoints = self._get_cloud_endpoints(options)
+        options['region'] = self.cloud_endpoints.name
 
         if options['account_id'] is None:
             session = local_session(self.get_session_factory(options))
@@ -60,9 +61,9 @@ class Azure(Provider):
         return partial(Session,
                        subscription_id=options.account_id,
                        authorization_file=options.authorization_file,
-                       cloud_endpoints=self.cloud)
+                       cloud_endpoints=self.cloud_endpoints)
 
-    def _get_cloud(self, options):
+    def _get_cloud_endpoints(self, options):
         cloud_list = options.get('regions')
 
         if not cloud_list:
