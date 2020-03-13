@@ -38,7 +38,7 @@ class Azure(Provider):
     region_to_cloud = {
         'AzureCloud': AZURE_PUBLIC_CLOUD,
         'AzureChinaCloud': AZURE_CHINA_CLOUD,
-        'AzureGermanyCloud': AZURE_GERMAN_CLOUD,
+        'AzureGermanCloud': AZURE_GERMAN_CLOUD,
         'AzureUSGovernment': AZURE_US_GOV_CLOUD
     }
 

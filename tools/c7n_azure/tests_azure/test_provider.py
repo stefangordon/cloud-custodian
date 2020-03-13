@@ -1,4 +1,4 @@
-from .azure_common import BaseTest, DEFAULT_SUBSCRIPTION_ID, DEFAULT_AZURE_CLOUD
+from .azure_common import BaseTest, DEFAULT_SUBSCRIPTION_ID
 from mock import patch
 from c7n_azure.provider import Azure
 from c7n.config import Config
@@ -43,52 +43,18 @@ class ProviderTest(BaseTest):
         self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id,
                          session.resource_namespace)
 
-    def test_initialize_default_azure_cloud_flag(self):
+    def test_initialize_azure_cloud(self):
+
+        clouds = [AZURE_PUBLIC_CLOUD, AZURE_CHINA_CLOUD, AZURE_GERMAN_CLOUD, AZURE_US_GOV_CLOUD]
         with patch('c7n_azure.session.Session.get_subscription_id'):
-            options = Config.empty(regions=[DEFAULT_AZURE_CLOUD])
-            azure = Azure()
-            azure.initialize(options)
-            self.assertEqual(AZURE_PUBLIC_CLOUD, azure.cloud_endpoints)
-            self.assertEqual(AZURE_PUBLIC_CLOUD.name, options['region'])
-            session = azure.get_session_factory(options)()
-
-        self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id,
-                         session.resource_namespace)
-
-    def test_initialize_china_azure_cloud(self):
-        with patch('c7n_azure.session.Session.get_subscription_id'):
-            options = Config.empty(regions=['AzureChinaCloud'])
-            azure = Azure()
-            azure.initialize(options)
-            self.assertEqual(AZURE_CHINA_CLOUD, azure.cloud_endpoints)
-            self.assertEqual(AZURE_CHINA_CLOUD.name, options['region'])
-            session = azure.get_session_factory(options)()
-
-        self.assertEqual(AZURE_CHINA_CLOUD.endpoints.active_directory_resource_id,
-                         session.resource_namespace)
-
-    def test_initialize_germany_azure_cloud(self):
-        with patch('c7n_azure.session.Session.get_subscription_id'):
-            options = Config.empty(regions=['AzureGermanyCloud'])
-            azure = Azure()
-            azure.initialize(options)
-            self.assertEqual(AZURE_GERMAN_CLOUD, azure.cloud_endpoints)
-            self.assertEqual(AZURE_GERMAN_CLOUD.name, options['region'])
-            session = azure.get_session_factory(options)()
-
-        self.assertEqual(AZURE_GERMAN_CLOUD.endpoints.active_directory_resource_id,
-                         session.resource_namespace)
-
-    def test_initialize_usgov_azure_cloud(self):
-        with patch('c7n_azure.session.Session.get_subscription_id'):
-            options = Config.empty(regions=['AzureUSGovernment'])
-            azure = Azure()
-            azure.initialize(options)
-            self.assertEqual(AZURE_US_GOV_CLOUD, azure.cloud_endpoints)
-            self.assertEqual(AZURE_US_GOV_CLOUD.name, options['region'])
-            session = azure.get_session_factory(options)()
-
-        self.assertEqual(AZURE_US_GOV_CLOUD.endpoints.active_directory_resource_id,
+            for cloud_endpoints in clouds:
+                options = Config.empty(regions=[cloud_endpoints.name])
+                azure = Azure()
+                azure.initialize(options)
+                self.assertEqual(cloud_endpoints, azure.cloud_endpoints)
+                self.assertEqual(cloud_endpoints.name, options['region'])
+                session = azure.get_session_factory(options)()
+                self.assertEqual(cloud_endpoints.endpoints.active_directory_resource_id,
                          session.resource_namespace)
 
     def test_exit_on_nonexistent_azure_cloud(self):

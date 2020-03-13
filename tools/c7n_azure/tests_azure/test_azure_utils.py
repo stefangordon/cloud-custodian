@@ -280,9 +280,9 @@ class UtilsTest(BaseTest):
             reload(sys.modules['c7n_azure.utils'])
 
             result = get_keyvault_secret(None, 'https://testkv.vault.net/secrets/testsecret/123412')
-            self.assertEqual(result, mock.value)
+            self.assertEqual(mock.value, result)
             resource_auth = _1.call_args.kwargs.get('resource')
-            self.assertEqual(get_keyvault_auth_endpoint(AZURE_PUBLIC_CLOUD), resource_auth)
+            self.assertEqual('https://vault.azure.net', resource_auth)
 
     @patch('msrestazure.azure_active_directory.MSIAuthentication')
     def test_get_keyvault_secret_with_parameter(self, _1):
@@ -296,9 +296,9 @@ class UtilsTest(BaseTest):
 
             result = get_keyvault_secret(None, 'https://testkv.vault.net/secrets/testsecret/123412',
                                          cloud_endpoints=AZURE_CHINA_CLOUD)
-            self.assertEqual(result, mock.value)
+            self.assertEqual(mock.value, result)
             resource_auth = _1.call_args.kwargs.get('resource')
-            self.assertEqual(get_keyvault_auth_endpoint(AZURE_CHINA_CLOUD), resource_auth)
+            self.assertEqual('https://vault.azure.cn', resource_auth)
 
     # Test relies on substitute data in Azure Common, not designed for live data
     @pytest.mark.skiplive
@@ -342,3 +342,7 @@ class UtilsTest(BaseTest):
     def test_get_keyvault_auth_public(self):
         auth = get_keyvault_auth_endpoint(AZURE_PUBLIC_CLOUD)
         self.assertEqual('https://vault.azure.net', auth)
+
+    def test_get_keyvault_auth_china(self):
+        auth = get_keyvault_auth_endpoint(AZURE_CHINA_CLOUD)
+        self.assertEqual('https://vault.azure.cn', auth)

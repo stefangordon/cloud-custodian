@@ -162,7 +162,7 @@ Azure Cloud Offerings
 Cloud Custodian supports four different Cloud offerings:
 1. Default Azure Public Cloud (`AzureCloud`)
 2. Azure China Cloud (`AzureChinaCloud`)
-3. Azure Germany Cloud (`AzureGermanyCloud`)
+3. Azure German Cloud (`AzureGermanCloud`)
 4. Azure US Government (`AzureUSGovernment`)
 
 In order to target these Clouds, pass the cloud name in the ``--region`` flag

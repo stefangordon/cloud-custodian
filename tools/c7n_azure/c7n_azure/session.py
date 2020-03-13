@@ -72,6 +72,7 @@ class Session(object):
         self.keyvault_auth_override = None
         self.resource_namespace = None
         self.resolve_auth_endpoint(auth_endpoint)
+        self.storage_endpoint = self.endpoints.suffixes.storage_endpoint
         self.authorization_file = authorization_file
         self._auth_params = {}
 
@@ -272,7 +273,7 @@ class Session(object):
                 client_id=data['credentials']['client_id'],
                 secret=data['credentials']['secret'],
                 tenant=self.tenant_id,
-                resource=self.base_url
+                resource=self.resource_namespace
             ), data.get('subscription', None))
 
     def get_functions_auth_string(self, target_subscription_id):

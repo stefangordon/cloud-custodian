@@ -54,7 +54,7 @@ class StorageUtilities(object):
         blob_service = BlockBlobService(
             account_name=storage.storage_name,
             token_credential=storage.token,
-            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+            endpoint_suffix=session.storage_endpoint
         )
         blob_service.create_container(storage.container_name)
         return blob_service, storage.container_name, storage.file_prefix
@@ -73,7 +73,7 @@ class StorageUtilities(object):
             account_name=name,
             account_key=primary_key,
             token_credential=token,
-            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+            endpoint_suffix=session.storage_endpoint
         )
 
     @staticmethod
@@ -84,7 +84,7 @@ class StorageUtilities(object):
         queue_service = QueueService(
             account_name=storage.storage_name,
             token_credential=storage.token,
-            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+            endpoint_suffix=session.storage_endpoint
         )
         queue_service.create_queue(storage.container_name)
 
@@ -97,7 +97,7 @@ class StorageUtilities(object):
         queue_service = QueueService(
             account_name=storage_account.name,
             token_credential=token,
-            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+            endpoint_suffix=session.storage_endpoint
         )
         return queue_service
 
@@ -109,7 +109,7 @@ class StorageUtilities(object):
         queue_service = QueueService(
             account_name=storage_account.name,
             token_credential=token,
-            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+            endpoint_suffix=session.storage_endpoint
         )
         return queue_service.create_queue(name)
 
@@ -120,7 +120,7 @@ class StorageUtilities(object):
         queue_service = QueueService(
             account_name=storage_account.name,
             token_credential=token,
-            endpoint_suffix=session.endpoints.suffixes.storage_endpoint
+            endpoint_suffix=session.storage_endpoint
         )
         return queue_service.delete_queue(name)
 
