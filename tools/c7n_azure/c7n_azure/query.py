@@ -13,12 +13,17 @@
 # limitations under the License.
 
 import logging
+
+from msrestazure import AzureConfiguration
+from msrestazure.azure_exceptions import CloudError
+
 try:
     from collections.abc import Iterable
 except ImportError:
     from collections import Iterable
 
 import six
+import json
 from c7n_azure import constants
 from c7n_azure.actions.logic_app import LogicAppAction
 from azure.mgmt.resourcegraph.models import QueryRequest
@@ -33,6 +38,8 @@ from c7n.manager import ResourceManager
 from c7n.query import sources, MaxResourceLimit
 from c7n.utils import local_session
 
+from msrest.service_client import ServiceClient
+
 log = logging.getLogger('custodian.azure.query')
 
 
@@ -43,29 +50,66 @@ class ResourceQuery:
 
     def filter(self, resource_manager, **params):
         m = resource_manager.resource_type
-        enum_op, list_op, extra_args = m.enum_spec
 
-        if extra_args:
-            params.update(extra_args)
+        # Generic Handling
+        if hasattr(m, 'resource_type'):
+            session = resource_manager.get_session()
+            subscriptionId = session.get_subscription_id()
+            url = f'/subscriptions/{subscriptionId}/providers/{m.resource_type}'
+            type_parts = m.resource_type.split('/')
 
-        params.update(m.extra_args(resource_manager))
+            config = AzureConfiguration(base_url='https://management.azure.com/')
+            config.credentials = session.credentials
+            client = ServiceClient(config.credentials, config)
 
-        try:
-            op = getattr(getattr(resource_manager.get_client(), enum_op), list_op)
-            result = op(**params)
+            # Construct parameters
+            query_parameters = {
+                'api-version': session.resource_api_version(
+                                    resource_id=None,
+                                    namespace=type_parts[0],
+                                    resource_type=type_parts[1])}
 
-            if isinstance(result, Iterable):
-                return [r.serialize(True) for r in result]
-            elif hasattr(result, 'value'):
-                return [r.serialize(True) for r in result.value]
-        except Exception as e:
-            log.error("Failed to query resource.\n"
-                      "Type: azure.{0}.\n"
-                      "Error: {1}".format(resource_manager.type, e))
-            raise
+            # Create and make request
+            request = client.get(url, query_parameters)
+            response = client.send(request, stream=False)
 
-        raise TypeError("Enumerating resources resulted in a return"
-                        "value which could not be iterated.")
+            if response.status_code not in [200]:
+                exp = CloudError(response)
+                raise exp
+
+            parsed_response = json.loads(response.content.decode('UTF-8'))
+
+            if 'value' in parsed_response:
+                return parsed_response['value']
+            return parsed_response
+
+
+        # Fallback
+        else:
+
+            enum_op, list_op, extra_args = m.enum_spec
+
+            if extra_args:
+                params.update(extra_args)
+
+            params.update(m.extra_args(resource_manager))
+
+            try:
+                op = getattr(getattr(resource_manager.get_client(), enum_op), list_op)
+                result = op(**params)
+
+                if isinstance(result, Iterable):
+                    return [r.serialize(True) for r in result]
+                elif hasattr(result, 'value'):
+                    return [r.serialize(True) for r in result.value]
+            except Exception as e:
+                log.error("Failed to query resource.\n"
+                          "Type: azure.{0}.\n"
+                          "Error: {1}".format(resource_manager.type, e))
+                raise
+
+            raise TypeError("Enumerating resources resulted in a return"
+                            "value which could not be iterated.")
 
     @staticmethod
     def resolve(resource_type):

@@ -219,11 +219,11 @@ class Session:
 
         return [os.environ.get(constants.ENV_FUNCTION_SUB_ID, self.subscription_id)]
 
-    def resource_api_version(self, resource_id):
+    def resource_api_version(self, resource_id, namespace, resource_type):
         """ latest non-preview api version for resource """
 
-        namespace = ResourceIdParser.get_namespace(resource_id)
-        resource_type = ResourceIdParser.get_resource_type(resource_id)
+        namespace = namespace or ResourceIdParser.get_namespace(resource_id)
+        resource_type = resource_type or ResourceIdParser.get_resource_type(resource_id)
 
         cache_id = namespace + resource_type
 
