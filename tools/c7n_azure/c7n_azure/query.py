@@ -54,9 +54,17 @@ class ResourceQuery:
         # Generic Handling
         if hasattr(m, 'resource_type'):
             session = resource_manager.get_session()
-            subscriptionId = session.get_subscription_id()
-            url = f'/subscriptions/{subscriptionId}/providers/{m.resource_type}'
-            type_parts = m.resource_type.split('/')
+            subscription_id = session.get_subscription_id()
+
+            if m.resource_type == constants.RESOURCE_GROUPS_TYPE:
+                url = f'/subscriptions/{subscription_id}/resourcegroups'
+                namespace = "Microsoft.Resources"
+                resource_type = constants.RESOURCE_GROUPS_TYPE
+            else:
+                url = f'/subscriptions/{subscription_id}/providers/{m.resource_type}'
+                type_parts = m.resource_type.split('/')
+                namespace = type_parts[0]
+                resource_type = type_parts[1]
 
             config = AzureConfiguration(base_url='https://management.azure.com/')
             config.credentials = session.credentials
@@ -66,8 +74,8 @@ class ResourceQuery:
             query_parameters = {
                 'api-version': session.resource_api_version(
                                     resource_id=None,
-                                    namespace=type_parts[0],
-                                    resource_type=type_parts[1])}
+                                    namespace=namespace,
+                                    resource_type=resource_type)}
 
             # Create and make request
             request = client.get(url, query_parameters)
