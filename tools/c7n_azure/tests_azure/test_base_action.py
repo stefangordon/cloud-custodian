@@ -25,7 +25,7 @@ class AzureBaseActionTest(BaseTest):
 
     def test_return_success_message(self):
         action = SampleAction()
-        result = action.process([
+        action.process([
             {'id': '1', 'name': 'one', 'message': 'foo', 'resourceGroup': 'rg'},
             {'id': '2', 'name': 'two', 'message': 'bar'}],
             None)
