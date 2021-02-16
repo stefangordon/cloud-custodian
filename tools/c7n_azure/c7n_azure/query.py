@@ -7,7 +7,7 @@ try:
 except ImportError:
     from collections import Iterable
 
-from c7n_azure import constants
+from c7n_azure.constants import DEFAULT_RESOURCE_AUTH_ENDPOINT
 from c7n_azure.actions.logic_app import LogicAppAction
 from azure.mgmt.resourcegraph.models import QueryRequest
 from c7n_azure.actions.notify import Notify
