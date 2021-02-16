@@ -67,8 +67,7 @@ class AzureBaseAction(BaseAction, metaclass=abc.ABCMeta):
         for r in resources:
             try:
                 result = self._process_resource(r)
-                if result:
-                    self._log_modified_resource(r, result)
+                self._log_modified_resource(r, result)
             except Exception as e:
                 # only executes during test runs
                 if "pytest" in sys.modules:
@@ -99,8 +98,7 @@ class AzureEventAction(EventAction, AzureBaseAction, metaclass=abc.ABCMeta):
         for r in resources:
             try:
                 result = self._process_resource(r, event)
-                if result:
-                    self._log_modified_resource(r, result)
+                self._log_modified_resource(r, result)
             except Exception as e:
                 # only executes during test runs
                 if "pytest" in sys.modules:
