@@ -10,10 +10,7 @@ from azure.storage.blob import BlockBlobService
 from azure.storage.queue import QueueService
 from c7n_azure.constants import STORAGE_AUTH_ENDPOINT
 
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
+from functools import lru_cache
 
 
 class StorageUtilities:
@@ -136,7 +133,7 @@ class StorageUtilities:
     @staticmethod
     @lru_cache()
     def get_storage_token(session):
-        if session.resource_namespace != STORAGE_AUTH_ENDPOINT:
+        if session.resource_endpoint != STORAGE_AUTH_ENDPOINT:
             session = session.get_session_for_resource(STORAGE_AUTH_ENDPOINT)
         return TokenCredential(session.get_bearer_token())
 

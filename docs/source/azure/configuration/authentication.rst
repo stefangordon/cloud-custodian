@@ -165,11 +165,10 @@ Cloud Custodian supports four different Cloud offerings:
 3. Azure German Cloud (`AzureGermanCloud`)
 4. Azure US Government (`AzureUSGovernment`)
 
-In order to target these Clouds, pass the cloud name in the ``--region`` flag
+To target these Clouds, pass the cloud name in the ``--region`` flag
 
 .. code-block:: bash
 
     custodian run -s . --region=AzureChinaCloud my-policy.yml
 
-**Note**: Development is geared towards Azure Public Cloud, and all Custodian features may not be readily available in alternate Clouds.
-Please file an issue if you'd like to see a feature supported
+**Note**: All Custodian features may not be available in every Cloud.

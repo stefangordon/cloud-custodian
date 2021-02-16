@@ -43,7 +43,7 @@ class ProviderTest(BaseTest):
             session = azure.get_session_factory(options)()
 
         self.assertEqual(AZURE_PUBLIC_CLOUD.endpoints.active_directory_resource_id,
-                         session.resource_namespace)
+                         session.resource_endpoint)
 
     def test_initialize_azure_cloud(self):
 
@@ -57,7 +57,7 @@ class ProviderTest(BaseTest):
                 self.assertEqual(cloud_endpoints.name, options['region'])
                 session = azure.get_session_factory(options)()
                 self.assertEqual(cloud_endpoints.endpoints.active_directory_resource_id,
-                         session.resource_namespace)
+                         session.resource_endpoint)
 
     def test_exit_on_nonexistent_azure_cloud(self):
         with patch('c7n_azure.session.Session.get_subscription_id'):

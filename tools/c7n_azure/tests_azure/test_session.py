@@ -279,7 +279,7 @@ class SessionTest(BaseTest):
     def test_get_session_for_resource(self):
         s = Session()
         resource_session = s.get_session_for_resource(constants.STORAGE_AUTH_ENDPOINT)
-        self.assertEqual(resource_session.resource_namespace, constants.STORAGE_AUTH_ENDPOINT)
+        self.assertEqual(resource_session.resource_endpoint, constants.STORAGE_AUTH_ENDPOINT)
 
     @patch('c7n_azure.utils.custodian_azure_send_override')
     def test_get_client_overrides(self, mock):
@@ -381,18 +381,17 @@ class SessionTest(BaseTest):
         mock_log.assert_called_once_with('Failed to authenticate with CLI credentials. '
                                          'Bad CLI credentials')
 
-    def test_resolve_auth_endpoint(self):
+    def test_get_auth_endpoint(self):
         s = Session()
-        s.resolve_auth_endpoint(constants.DEFAULT_AUTH_ENDPOINT)
-        self.assertEqual('https://management.core.windows.net/', s.resource_namespace)
+        result = s.get_auth_endpoint(constants.DEFAULT_AUTH_ENDPOINT)
+        self.assertEqual('https://management.core.windows.net/', result)
 
-    def test_resolve_auth_endpoint_vault(self):
+    def test_get_auth_endpoint_vault(self):
         s = Session()
-        s.resolve_auth_endpoint(constants.VAULT_AUTH_ENDPOINT)
-        self.assertEqual('https://vault.azure.net', s.resource_namespace)
-        self.assertTrue(s.keyvault_auth_override)
+        result = s.get_auth_endpoint(constants.VAULT_AUTH_ENDPOINT)
+        self.assertEqual('https://vault.azure.net', result)
 
-    def test_resolve_auth_endpoint_storage(self):
+    def test_get_auth_endpoint_storage(self):
         s = Session()
-        s.resolve_auth_endpoint(constants.STORAGE_AUTH_ENDPOINT)
-        self.assertEqual('https://storage.azure.com/', s.resource_namespace)
+        result = s.get_auth_endpoint(constants.STORAGE_AUTH_ENDPOINT)
+        self.assertEqual('https://storage.azure.com/', result)

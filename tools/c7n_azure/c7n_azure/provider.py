@@ -67,10 +67,8 @@ class Azure(Provider):
         if cloud:
             return cloud
         else:
-            log.error('Region Flag: %s not recognized, please choose an Azure Cloud from'
-                      'the following: AzureCloud, AzureChinaCloud, AzureGermanyCloud, '
-                      'AzureUSGovernment'
-                      % cloud_list[0])
+            log.error('Region Flag: %s not recognized. Available values: %s.',
+                      cloud_list[0], ", ".join(self.region_to_cloud.keys()))
             sys.exit(1)
 
 

@@ -243,7 +243,7 @@ class WhiteListFilter(Filter):
             return access_policies
 
         if self.graph_client is None:
-            s = Session(auth_endpoint=GRAPH_AUTH_ENDPOINT)
+            s = Session(resource_endpoint_type=GRAPH_AUTH_ENDPOINT)
             self.graph_client = GraphRbacManagementClient(s.get_credentials(), s.get_tenant_id())
 
         # Retrieve graph objects for all object_id
