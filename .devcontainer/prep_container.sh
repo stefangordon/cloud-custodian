@@ -4,7 +4,7 @@ set -x
 # Workspace
 cd ..
 
-# Install pre-requisites
+# Install prerequisites
 pip3 install -U virtualenv tox
 
 # Poetry
