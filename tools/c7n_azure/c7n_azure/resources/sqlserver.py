@@ -166,11 +166,11 @@ class VulnerabilityAssessmentFilter(Filter):
         }
     )
 
-    log = logging.getLogger('custodian.azure.sqldatabase.VulnerabilityAssessmentFilter')
+    log = logging.getLogger('custodian.azure.sqldatabase.vulnerability-assessment-filter')
 
     def __init__(self, data, manager=None):
         super(VulnerabilityAssessmentFilter, self).__init__(data, manager)
-        self.enabled = self.data.get('enabled')
+        self.enabled = self.data['enabled']
 
     def process(self, resources, event=None):
         resources, exceptions = ThreadHelper.execute_in_parallel(
@@ -202,7 +202,7 @@ class VulnerabilityAssessmentFilter(Filter):
 
             if resource['c7n:vulnerability_assessment']\
                     .get('recurringScans', {})\
-                    .get('isEnabled') == self.enabled:
+                    .get('isEnabled', False) == self.enabled:
                 result.append(resource)
 
         return result
