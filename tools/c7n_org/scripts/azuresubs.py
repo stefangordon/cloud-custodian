@@ -8,6 +8,7 @@ from azure.mgmt.resource.subscriptions import SubscriptionClient
 
 NAME_TEMPLATE = "{name}"
 
+
 @click.command()
 @click.option(
     '-f', '--output', type=click.File('w'),
