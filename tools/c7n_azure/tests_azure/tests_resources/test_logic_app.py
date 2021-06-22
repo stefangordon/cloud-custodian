@@ -4,16 +4,12 @@ from ..azure_common import BaseTest
 
 
 class LogicAppTest(BaseTest):
-    def setUp(self):
-        super(LogicAppTest, self).setUp()
-
     def test_azure_logic_app_workflow_schema_validate(self):
-        with self.sign_out_patch():
-            p = self.load_policy({
-                'name': 'test-azure-logic-app-workflow',
-                'resource': 'azure.logic-app-workflow'
-            }, validate=True)
-            self.assertTrue(p)
+        p = self.load_policy({
+            'name': 'test-azure-logic-app-workflow',
+            'resource': 'azure.logic-app-workflow'
+        }, validate=True)
+        self.assertTrue(p)
 
     def test_find_workflow_by_name(self):
         p = self.load_policy({

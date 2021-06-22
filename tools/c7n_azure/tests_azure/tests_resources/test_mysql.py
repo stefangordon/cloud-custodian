@@ -4,16 +4,12 @@ from ..azure_common import BaseTest
 
 
 class MySQLTest(BaseTest):
-    def setUp(self):
-        super(MySQLTest, self).setUp()
-
     def test_azure_mysql_schema_validate(self):
-        with self.sign_out_patch():
-            p = self.load_policy({
-                'name': 'test-azure-mysql',
-                'resource': 'azure.mysql'
-            }, validate=True)
-            self.assertTrue(p)
+        p = self.load_policy({
+            'name': 'test-azure-mysql',
+            'resource': 'azure.mysql'
+        }, validate=True)
+        self.assertTrue(p)
 
     def test_find_by_name(self):
         p = self.load_policy({

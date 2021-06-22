@@ -27,7 +27,7 @@ class MySQL(ArmResourceManager):
     """
 
     class resource_type(ArmResourceManager.resource_type):
-        doc_groups = ['Compute']
+        doc_groups = ['Databases']
 
         service = 'azure.mgmt.rdbms.mysql'
         client = 'MySQLManagementClient'

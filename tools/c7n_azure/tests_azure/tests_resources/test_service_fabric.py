@@ -4,16 +4,12 @@ from ..azure_common import BaseTest
 
 
 class ServiceFabricTest(BaseTest):
-    def setUp(self):
-        super(ServiceFabricTest, self).setUp()
-
     def test_azure_fabric_managed_schema_validate(self):
-        with self.sign_out_patch():
-            p = self.load_policy({
-                'name': 'test-azure-service-fabric-cluster-managed',
-                'resource': 'azure.service-fabric-cluster-managed'
-            }, validate=True)
-            self.assertTrue(p)
+        p = self.load_policy({
+            'name': 'test-azure-service-fabric-cluster-managed',
+            'resource': 'azure.service-fabric-cluster-managed'
+        }, validate=True)
+        self.assertTrue(p)
 
     def test_azure_fabric_schema_validate(self):
         with self.sign_out_patch():
