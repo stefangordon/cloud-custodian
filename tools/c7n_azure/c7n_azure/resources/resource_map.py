@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 ResourceMap = {
     "azure.aks": "c7n_azure.resources.k8s_service.KubernetesService",
+    "azure.automation-account-webhook": "c7n_azure.resources.automation_account_webhook.AutomationAccountWebhook",
     "azure.api-management": "c7n_azure.resources.apimanagement.ApiManagement",
     "azure.appserviceplan": "c7n_azure.resources.appserviceplan.AppServicePlan",
     "azure.application-gateway": "c7n_azure.resources.app_gateway.ApplicationGateway",
@@ -33,6 +34,7 @@ ResourceMap = {
     "azure.keyvault-key": "c7n_azure.resources.key_vault_keys.KeyVaultKeys",
     "azure.keyvault-keys": "c7n_azure.resources.key_vault_keys.KeyVaultKeys",
     "azure.loadbalancer": "c7n_azure.resources.load_balancer.LoadBalancer",
+    "azure.log-analytics-workspace": "c7n_azure.resources.log_analytics_workspace.LogAnalyticsWorkspace",
     "azure.logic-app-workflow": "c7n_azure.resources.logic_app.LogicAppWorkflow",
     "azure.mysql": "c7n_azure.resources.mysql.MySQL",
     "azure.networkinterface": "c7n_azure.resources.network_interface.NetworkInterface",
@@ -48,6 +50,7 @@ ResourceMap = {
     "azure.roledefinition": "c7n_azure.resources.access_control.RoleDefinition",
     "azure.routetable": "c7n_azure.resources.route_table.RouteTable",
     "azure.search": "c7n_azure.resources.search.SearchService",
+    "azure.service-bus": "c7n_azure.resources.service_bus.ServiceBus",
     "azure.service-fabric-cluster": "c7n_azure.resources.service_fabric.ServiceFabricCluster",
     "azure.service-fabric-cluster-managed": "c7n_azure.resources.service_fabric.ServiceFabricClusterManaged",  # noqa
     "azure.sql-database": "c7n_azure.resources.sqldatabase.SqlDatabase",
@@ -59,6 +62,7 @@ ResourceMap = {
     "azure.subscription": "c7n_azure.resources.subscription.Subscription",
     "azure.traffic-manager-profile": "c7n_azure.resources.traffic_manager.TrafficManagerProfile",
     "azure.vm": "c7n_azure.resources.vm.VirtualMachine",
+    "azure.vm-snapshot": "c7n_azure.resources.vm_snapshot.VMSnapshot",
     "azure.vmss": "c7n_azure.resources.vmss.VMScaleSet",
     "azure.vnet": "c7n_azure.resources.vnet.Vnet",
     "azure.webapp": "c7n_azure.resources.web_app.WebApp"
